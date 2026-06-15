@@ -228,10 +228,10 @@ let reconnectTimer = null;
 // // CHỈ KHAI BÁO URL ĐẾN CỔNG 3000 (Không được dùng const ws = new WebSocket ở đây)
 // const socketUrl = `ws://${SERVER_IP}:3000`; 
 // Thay vì dùng SERVER_IP cứng, bạn dùng trực tiếp link từ Render
-const RENDER_URL = "https://datn-iot-hcmute.onrender.com"; 
+const BACKEND_URL = "https://datn-iot-hcmute.onrender.com";
 
 // Kết nối WebSocket: Dùng wss (WebSocket Secure) vì Render hỗ trợ HTTPS
-const socketUrl = `wss://${RENDER_URL}`;
+const socketUrl = `wss://${BACKEND_URL}`;
 
 function connectWebSocket() {
     if (reconnectTimer) {
@@ -500,9 +500,6 @@ function setupModeSwitch() {
     }
 }
 
-// ========================================================
-// 5. QUẢN LÝ BIỂU ĐỒ (CHART.JS)
-// ========================================================
 // ========================================================
 // 5. QUẢN LÝ BIỂU ĐỒ (CHART.JS)
 // ========================================================
