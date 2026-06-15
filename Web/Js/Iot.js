@@ -223,10 +223,15 @@ let ws = null;
 let reconnectTimer = null;
 
 // Tự động lấy IP của máy tính chạy server, nếu không lấy được thì dùng IP LAN của bạn
-const SERVER_IP = window.location.hostname || "10.219.42.111"; 
+// const SERVER_IP = window.location.hostname || "10.219.42.111"; 
 
-// CHỈ KHAI BÁO URL ĐẾN CỔNG 3000 (Không được dùng const ws = new WebSocket ở đây)
-const socketUrl = `ws://${SERVER_IP}:3000`; 
+// // CHỈ KHAI BÁO URL ĐẾN CỔNG 3000 (Không được dùng const ws = new WebSocket ở đây)
+// const socketUrl = `ws://${SERVER_IP}:3000`; 
+// Thay vì dùng SERVER_IP cứng, bạn dùng trực tiếp link từ Render
+const RENDER_URL = "datn-iot-server.onrender.com"; 
+
+// Kết nối WebSocket: Dùng wss (WebSocket Secure) vì Render hỗ trợ HTTPS
+const socketUrl = `wss://${RENDER_URL}`;
 
 function connectWebSocket() {
     if (reconnectTimer) {
