@@ -63,136 +63,144 @@ const HomeScreen = () => {
   }, [focusedInput]);
 
 // =============================
-  // 2. QUẢN LÝ KẾT NỐI WEBSOCKET REAL-TIME
-  // =============================
-  useEffect(() => {
-    const connectWS = () => {
-      console.log("🔄 Đang kết nối tới WebSocket Server...");
-      const ws = new WebSocket(WS_URL);
-      wsRef.current = ws;
+// 2. QUẢN LÝ KẾT NỐI WEBSOCKET REAL-TIME (ĐÃ FIX LỖI LẶP KẾT NỐI)
+// =============================
+useEffect(() => {
+  const connectWS = () => {
+    console.log("🔄 Đang kết nối tới WebSocket Server...");
+    const ws = new WebSocket(WS_URL);
+    wsRef.current = ws;
 
-      ws.onopen = () => {
-        console.log("🟢 Đã kết nối thành công WebSocket tới Server!");
+    ws.onopen = () => {
+      console.log("🟢 Đã kết nối thành công WebSocket tới Server!");
+      ws.send(JSON.stringify({ event: "request_sync" }));
+    };
 
-        ws.send(JSON.stringify({
-          event: "request_sync"
-        }));
-      };
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log("📥 Nhận dữ liệu từ Server:", data);
+        const eventType = data.event;
 
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log("📥 Nhận dữ liệu từ Server:", data); // THÊM DÒNG NÀY VÀO
-    // ... code switch case hiện tại
-          const eventType = data.event;
-
-          switch (eventType) {
-            case 'sync': // Nhận đồng bộ tổng thể khi mới vừa kết nối thành công
-              if (data.mode !== undefined) setMode(data.mode);
-              if (data.system?.mode !== undefined) setMode(data.system.mode); 
-
-              if (data.sensorData) {
-                setSensorData({
-                  temperature: data.sensorData.nhietdo ?? 0,
-                  humidity: data.sensorData.doamkk ?? 0,
-                  soilMoisture: data.sensorData.doamdat ?? 0,
-                  lightIntensity: data.sensorData.anhsang ?? 0,
-                });
-              }
-
-              if (data.control) {
-                setDeviceState({
-                  pump: data.control.bom === 1,
-                  light: data.control.den === 1,
-                  spray: data.control.phunsuong === 1,
-                  fan: data.control.quat === 1,
-                  shade: data.control.manche === 1,
-                });
-              }
-
-              if (data.thresholds) {
-                setThresholdInputs(prev => {
-                  const next = { ...prev };
-                  Object.keys(data.thresholds).forEach((key) => {
-                    if (focusedInputRef.current !== key) {
-                      next[key as keyof typeof prev] = String(data.thresholds[key]);
-                    }
-                  });
-                  return next;
-                });
-              }
-              break;
-
-            case 'sensor': 
+        switch (eventType) {
+          case 'sync': // Đồng bộ tổng thể từ bộ nhớ RAM của Server
+            if (data.mode !== undefined) setMode(data.mode);
+            if (data.sensorData) {
               setSensorData({
-                temperature: data.nhietdo ?? 0,
-                humidity: data.doamkk ?? 0,
-                soilMoisture: data.doamdat ?? 0,
-                lightIntensity: data.anhsang ?? 0,
+                temperature: data.sensorData.nhietdo ?? 0,
+                humidity: data.sensorData.doamkk ?? 0,
+                soilMoisture: data.sensorData.doamdat ?? 0,
+                lightIntensity: data.sensorData.anhsang ?? 0,
               });
-              break;
-
-            case 'control': 
-              setDeviceState(prev => ({
-                ...prev,
-                ...(data.bom !== undefined && { pump: data.bom === 1 }),
-                ...(data.den !== undefined && { light: data.den === 1 }),
-                ...(data.phunsuong !== undefined && { spray: data.phunsuong === 1 }),
-                ...(data.quat !== undefined && { fan: data.quat === 1 }),
-                ...(data.manche !== undefined && { shade: data.manche === 1 })
-              }));
-              break;
-
-            case 'threshold': 
+            }
+            if (data.control) {
+              setDeviceState({
+                pump: data.control.bom === 1,
+                light: data.control.den === 1,
+                spray: data.control.phunsuong === 1,
+                fan: data.control.quat === 1,
+                shade: data.control.manche === 1,
+              });
+            }
+            if (data.thresholds) {
               setThresholdInputs(prev => {
                 const next = { ...prev };
-                Object.keys(data).forEach((key) => {
-                  if (key !== 'event' && focusedInputRef.current !== key && key in next) {
-                    next[key as keyof typeof prev] = String(data[key]);
+                Object.keys(data.thresholds).forEach((key) => {
+                  if (focusedInputRef.current !== key) {
+                    next[key as keyof typeof prev] = String(data.thresholds[key]);
                   }
                 });
                 return next;
               });
-              break;
+            }
+            break;
 
-            case 'mode': 
-              if (data.mode !== undefined) setMode(data.mode);
-              break;
-          }
-        } catch (err) {
-          console.log("❌ Lỗi phân tích JSON từ WS:", err);
+          case 'sensor': 
+            setSensorData({
+              temperature: data.nhietdo ?? 0,
+              humidity: data.doamkk ?? 0,
+              soilMoisture: data.doamdat ?? 0,
+              lightIntensity: data.anhsang ?? 0,
+            });
+            break;
+
+          case 'control': 
+            setDeviceState(prev => ({
+              ...prev,
+              ...(data.bom !== undefined && { pump: data.bom === 1 }),
+              ...(data.den !== undefined && { light: data.den === 1 }),
+              ...(data.phunsuong !== undefined && { spray: data.phunsuong === 1 }),
+              ...(data.quat !== undefined && { fan: data.quat === 1 }),
+              ...(data.manche !== undefined && { shade: data.manche === 1 })
+            }));
+            break;
+
+          case 'threshold': 
+            setThresholdInputs(prev => {
+              const next = { ...prev };
+              Object.keys(data).forEach((key) => {
+                if (key !== 'event' && focusedInputRef.current !== key && key in next) {
+                  next[key as keyof typeof prev] = String(data[key]);
+                }
+              });
+              return next;
+            });
+            break;
+
+          case 'mode': 
+            if (data.mode !== undefined) setMode(data.mode);
+            break;
         }
-      };
+      } catch (err) {
+        console.log("❌ Lỗi phân tích JSON từ WS:", err);
+      }
+    };
 
     ws.onclose = () => {
-    console.log("🔴 Mất kết nối WebSocket. Đang thử kết nối lại sau 3 giây...");
+      console.log("🔴 Mất kết nối WebSocket. Đang thử kết nối lại sau 3 giây...");
+      
+      // 🔥 FIX 1: Hủy các listener của chính kết nối vừa đóng để tránh gọi chồng chéo
+      ws.onopen = null;
+      ws.onmessage = null;
+      ws.onclose = null;
+      ws.onerror = null;
 
-    reconnectTimeoutRef.current = setTimeout(() => {
-        connectWS();
-    }, 3000);
-    };
-
-      ws.onerror = (error) => {
-        console.log("❌ Lỗi đường truyền WebSocket:", error);
-        ws.close();
-      };
-    };
-
-    connectWS();
-
-    // Hủy kết nối và dọn dẹp bộ nhớ khi tắt màn hình (Unmount Component)
-    return () => {
-    if (reconnectTimeoutRef.current) {
+      if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
+      }
+
+      reconnectTimeoutRef.current = setTimeout(() => {
+        connectWS();
+      }, 3000);
+    };
+
+    ws.onerror = (error) => {
+      console.log("❌ Lỗi đường truyền WebSocket:", error);
+      ws.close();
+    };
+  };
+
+  connectWS();
+
+  // Hủy kết nối và dọn dẹp bộ nhớ khi tắt màn hình (Unmount Component)
+  return () => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
     }
 
     if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
+      // 🔥 FIX 2: Tắt biểu thức lắng nghe onclose trước rồi mới đóng hẳn để chặn đứng reconnect ngầm
+      wsRef.current.onopen = null;
+      wsRef.current.onmessage = null;
+      wsRef.current.onclose = null; 
+      wsRef.current.onerror = null;
+      wsRef.current.close();
+      wsRef.current = null;
+      console.log("🧹 Đã dọn dẹp sạch kết nối WebSocket cũ chống trùng lặp.");
     }
-    };
-  }, []);
+  };
+}, []);
 
   // =============================
   // 3. CÁC HÀM GỬI LỆNH QUA WEBSOCKET (FUNCTIONS)

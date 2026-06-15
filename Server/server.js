@@ -599,7 +599,6 @@ let lastSaveTime = 0;
 // ========================================================
 // KHỞI TẠO WEBSOCKET SERVER (CHẠY CÙNG PORT 3000)
 // ========================================================
-// 🟢 BƯỚC 2: Truyền trực tiếp đối tượng HTTP server vào thay vì gán port: 8084 cố định
 const wss = new WebSocketServer({ server }); 
 
 wss.on('connection', function connection(ws) {
@@ -611,7 +610,6 @@ wss.on('connection', function connection(ws) {
             
             const broadcastData = (messageObject) => {
                 wss.clients.forEach((client) => {
-                    // BỎ ĐI ĐIỀU KIỆN 'client !== ws' ĐỂ SERVER GỬI CHO TẤT CẢ (KỂ CẢ NGƯỜI GỬI)
                     if (client.readyState === 1) { 
                         client.send(JSON.stringify(messageObject));
                     }
@@ -621,9 +619,19 @@ wss.on('connection', function connection(ws) {
             const { event, ...payloadData } = jsonData;
             
             switch (event) {
+                // 🔥 ĐÃ FIX LỖI ĐỒNG BỘ: Không broadcast bậy bạ lệnh request_sync nữa!
                 case 'request_sync':
-                    console.log("🔄 [WS] Web yêu cầu đồng bộ. Chuyển lệnh xuống ESP32...");
-                    broadcastData({ event: "request_sync" }); 
+                    console.log("🔄 [WS] Một thiết bị (App/Web) vừa Reconnect và yêu cầu đồng bộ dữ liệu.");
+                    
+                    // Trả thẳng cục dữ liệu thực tế đang lưu trong RAM Server cho CHÍNH THẰNG ĐANG XIN (ws)
+                    ws.send(JSON.stringify({
+                        event: "sync",
+                        mode: dataStorage.mode,
+                        sensorData: dataStorage.sensorData,
+                        control: dataStorage.control,
+                        thresholds: dataStorage.thresholds
+                    }));
+                    console.log("📤 [WS] Đã gửi trả gói 'sync' chứa data mới nhất cho thiết bị.");
                     break;
                     
                 case 'sync':
