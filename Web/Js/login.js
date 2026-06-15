@@ -1,5 +1,5 @@
 // 1. Khai báo URL của server backend ở đầu file
-const BACKEND_URL = "https://datn-iot-server.onrender.com";
+const BACKEND_URL = "https://datn-iot-hcmute.onrender.com";
 
 // LOGIN
 document.getElementById("form-login")
