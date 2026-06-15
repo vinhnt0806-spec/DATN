@@ -82,6 +82,8 @@ const HomeScreen = () => {
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+          console.log("📥 Nhận dữ liệu từ Server:", data); // THÊM DÒNG NÀY VÀO
+    // ... code switch case hiện tại
           const eventType = data.event;
 
           switch (eventType) {

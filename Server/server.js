@@ -507,7 +507,7 @@ const bcrypt = require("bcryptjs");
 const User = require("./models/user");
 
 // Import các Model cần thiết để thao tác trực tiếp với Database
-const Sensor = require("./models/sensor"); 
+const Sensor = require("./models/sensor");
 const SystemConfig = require("./models/systemConfig");
 
 // Route phục vụ Auth (Đăng nhập) và History (Tải lịch sử vẽ đồ thị)
@@ -611,7 +611,8 @@ wss.on('connection', function connection(ws) {
             
             const broadcastData = (messageObject) => {
                 wss.clients.forEach((client) => {
-                    if (client !== ws && client.readyState === 1) { 
+                    // BỎ ĐI ĐIỀU KIỆN 'client !== ws' ĐỂ SERVER GỬI CHO TẤT CẢ (KỂ CẢ NGƯỜI GỬI)
+                    if (client.readyState === 1) { 
                         client.send(JSON.stringify(messageObject));
                     }
                 });
