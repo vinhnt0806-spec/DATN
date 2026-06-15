@@ -17,7 +17,7 @@ import {
   View,
 } from 'react-native';
 
-const API_URL = "http://192.168.1.187:3000";
+const API_URL = "https://datn-iot-hcmute.onrender.com";
 const { width } = Dimensions.get('window');
 
 export default function LoginScreen() {
