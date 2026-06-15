@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đồ Án IOT - Giao Diện Mới</title>
+    <link rel="stylesheet" href="CSS/test.css" />
+</head>
+
+<body>
+    <div class="Section GioiThieuSection">
+        <div id="GioiThieu">
+            <div class="gioiThieuHeader">
+                <img src="./image/logo_hcmute.png" class="logo left" alt="Logo HCMUTE">
+                <div class="header-text">
+                    <div class="status-badge">
+                        <span class="pulse-dot"></span> Hệ thống Online
+                    </div>
+                    <h1 class="title_chinh">TRƯỜNG ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT THÀNH PHỐ HỒ CHÍ MINH</h1>
+                    <h2 class="title_phu">ĐỒ ÁN TỐT NGHIỆP</h2>
+                    <h3 class="title_doan">MÔ HÌNH HỆ THỐNG TƯỚI TIÊU THÔNG MINH SỬ DỤNG NĂNG LƯỢNG MẶT TRỜI</h3>
+                    <p class="Ten">GVHD: TS. Thái Hoàng Linh</p>
+                    <p class="Ten">SVTH: Nguyễn Thành Vinh - 22142435</p>
+                    <p class="Ten">SVTH: Nguyễn Ngọc Ý - 22142440</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="Container">
+        <div class="HienThi">
+            <h1>📊 DISPLAY SENSOR VALUES</h1>
+            <div class="box-container">
+                <div class="box temp-card">
+                    <h2 class="BoxName">🌡️ Temperature</h2>
+                    <h3 id="temperature" class="BoxData">-- °C</h3>
+                </div>
+                <div class="box humid-card">
+                    <h2 class="BoxName">💧 Air Humidity</h2>
+                    <h3 id="humidity" class="BoxData">-- %</h3>
+                </div>
+                <div class="box soil-card">
+                    <h2 class="BoxName">🌱 Soil Moisture</h2>
+                    <h3 id="soilMoisture" class="BoxData">-- %</h3>
+                </div>
+                <div class="box light-card">
+                    <h2 class="BoxName">☀️ Light Intensity</h2>
+                    <h3 id="lightIntensity" class="BoxData">-- lux</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="CaiDat">
+            <h1>⚙️ SETTING VALUES</h1>
+            <div class="box-container setting-container">
+                <div class="box temp-card">
+                    <h2 class="BoxName">🌡️ Temp Upper</h2>
+                    <input type="number" id="setTemperatureUpper" class="BoxInput" placeholder="Nhiệt độ cao" />
+                    <h3 id="temperatureUpper" class="BoxData">-- °C</h3>
+                </div>
+                <div class="box humid-card">
+                    <h2 class="BoxName">💧 Humid Upper</h2>
+                    <input type="number" id="setHumidityUpper" class="BoxInput" placeholder="Độ ẩm cao" />
+                    <h3 id="humidityUpper" class="BoxData">-- %</h3>
+                </div>
+                <div class="box soil-card">
+                    <h2 class="BoxName">🌱 Soil Upper</h2>
+                    <input type="number" id="setSoilMoistureUpper" class="BoxInput" placeholder="Độ ẩm đất cao" />
+                    <h3 id="soilMoistureUpper" class="BoxData">-- %</h3>
+                </div>
+                <div class="box light-card">
+                    <h2 class="BoxName">☀️ Light Upper</h2>
+                    <input type="number" id="setLightIntensityUpper" class="BoxInput" placeholder="Ánh sáng cao" />
+                    <h3 id="lightIntensityUpper" class="BoxData">-- lux</h3>
+                </div>
+
+                <div class="box temp-card">
+                    <h2 class="BoxName">🌡️ Temp Lower</h2>
+                    <input type="number" id="setTemperatureLower" class="BoxInput" placeholder="Nhiệt độ thấp" />
+                    <h3 id="temperatureLower" class="BoxData">-- °C</h3>
+                </div>
+                <div class="box humid-card">
+                    <h2 class="BoxName">💧 Humid Lower</h2>
+                    <input type="number" id="setHumidityLower" class="BoxInput" placeholder="Độ ẩm thấp" />
+                    <h3 id="humidityLower" class="BoxData">-- %</h3>
+                </div>
+                <div class="box soil-card">
+                    <h2 class="BoxName">🌱 Soil Lower</h2>
+                    <input type="number" id="setSoilMoistureLower" class="BoxInput" placeholder="Độ ẩm đất thấp" />
+                    <h3 id="soilMoistureLower" class="BoxData">-- %</h3>
+                </div>
+                <div class="box light-card">
+                    <h2 class="BoxName">☀️ Light Lower</h2>
+                    <input type="number" id="setLightIntensityLower" class="BoxInput" placeholder="Ánh sáng thấp" />
+                    <h3 id="lightIntensityLower" class="BoxData">-- lux</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="Section DieuKhienSection">
+            <div class="DieuKhien">
+                <h1>🕹️ DEVICE CONTROL</h1>
+                <div class="box-container">
+                    <div class="box control">
+                        <h2 class="BoxName">🚰 Irrigation Pump</h2>
+                        <label class="switch">
+                            <input type="checkbox" id="togglePump" />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="box control">
+                        <h2 class="BoxName">🌬️ Misting Pump</h2>
+                        <label class="switch">
+                            <input type="checkbox" id="toggleSpray" />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="box control">
+                        <h2 class="BoxName">💡 Light</h2>
+                        <label class="switch">
+                            <input type="checkbox" id="toggleLight" />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="box control">
+                        <h2 class="BoxName">🌀 Fan</h2>
+                        <label class="switch">
+                            <input type="checkbox" id="toggleFan" />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="box control">
+                        <h2 class="BoxName">⛺ Shade</h2>
+                        <label class="switch">
+                            <input type="checkbox" id="toggleShade" />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="box control">
+                        <h2 class="BoxName">🔄 Mode</h2>
+                        <div class="toggle-container">
+                            <span class="mode-label-left">Auto</span>
+                            <label class="switch" for="modeSwitch">
+                                <input type="checkbox" id="modeSwitch" />
+                                <span class="slider round"></span>
+                            </label>
+                            <span class="mode-label-right">Manual</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="Js/Iot.js"></script>
+</body>
+</html>

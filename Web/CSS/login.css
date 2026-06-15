@@ -1,0 +1,104 @@
+body{
+    background-image: url('../image/background.jpg');
+    background-size: cover; /* Ảnh phủ toàn bộ màn hình */
+    background-position: center; /* Căn giữa ảnh */
+    background-repeat: no-repeat; /* Không lặp lại ảnh */
+    min-height: 100vh; /* Chiều cao bằng 100% màn hình */
+}
+
+#wrapper {
+    display: flex;
+    justify-content: center;  /* Căn giữa theo chiều ngang */
+    align-items: center;  /* Căn giữa theo chiều dọc */
+    min-height: 100vh;  /* Chiếm toàn bộ chiều cao màn hình */
+}
+
+#form-login { 
+    max-width: 400px;
+    padding: 30px 30px 40px;
+    backdrop-filter: blur(5px) brightness(80%);
+    flex-grow: 1;
+    border-radius: 20px; /* Bo góc cho đẹp hơn */ 
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+.form-heading {
+    font-size: 30px;
+    color: #f5f5f5;
+    text-align: center;
+    margin-bottom: 30px;
+}
+.form-group {
+    margin-bottom: 15px; /* Giảm khoảng cách dưới */
+    margin-top: 10px; /* Giảm khoảng cách trên */
+    border-bottom: 2px solid #fff;
+    display: flex;
+}
+.form-group i{
+    color: #fff;
+    font-size: 20px;
+    margin-right: 0%;
+    line-height: 30px; 
+    padding-top: 5px; 
+    
+    
+}
+.form-input {
+  background: transparent;
+  border: 0; 
+  outline: 0;
+  color: #f5f5f5;
+  flex-grow: 1;
+  padding: 15px; /* Tăng padding để ô input lớn hơn */
+  font-size: 18px; /* Tăng kích thước chữ */
+  /*height: 40px;*/    /* Tăng chiều cao của ô input */
+ 
+}
+.form-input::placeholder {
+    color: #f5f5f5;
+}
+#eye i{
+    padding-right: 0;
+    cursor: pointer;
+}
+.forget {
+    color: #f5f5f5;
+    text-align: left;
+    margin-top: 15px;
+    font-size: 20px;
+    display: flex;
+    justify-content: space-between; /* Tạo khoảng cách giữa các phần tử */
+    text-decoration: none;  /* Bỏ gạch chân */
+}
+.forget a {
+    color: #f5f5f5;
+    text-decoration: none;
+}
+.forget a:hover {
+    color: #6a2cddf6;
+    text-decoration: underline;
+}
+.forget input[type="checkbox"] {
+    width: 15px; /* Tăng kích thước chiều rộng */
+    height: 15px; /* Tăng kích thước chiều cao */
+    margin-right: 10px; /* Khoảng cách giữa checkbox và nhãn */
+    cursor: pointer; /* di chuột vào hiện bàn tay */
+}
+
+.form-submit {
+    background: transparent;
+    color: #f1eeee;
+    border: 1px solid #fff;
+    padding: 15px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 30px;
+    width: 100%;    
+    margin-top: 20px;   
+    transition: 0.3s ease-in-out;             
+    text-transform: uppercase;
+}
+.form-submit:hover {
+    background-color: #54a0ff; /* Thay đổi màu nền khi hover */
+    color: white; /* Chữ đổi thành màu trắng */
+    box-shadow: 0 0 10px rgba(10, 10, 10, 0.5); /* Tạo hiệu ứng phát sáng nhẹ */
+}

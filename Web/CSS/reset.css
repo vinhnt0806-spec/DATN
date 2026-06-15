@@ -1,0 +1,42 @@
+/* RESET CƠ BẢN */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* BODY */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f4f6f9;
+    color: #333;
+    line-height: 1.5;
+}
+
+/* LINK */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* LIST */
+ul, ol {
+    list-style: none;
+}
+
+/* INPUT / BUTTON */
+input, button, textarea {
+    font-family: inherit;
+    outline: none;
+}
+
+/* BUTTON */
+button {
+    cursor: pointer;
+}
+
+/* IMAGE */
+img {
+    max-width: 100%;
+    display: block;
+}
