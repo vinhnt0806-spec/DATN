@@ -1,4 +1,4 @@
-const Sensor = require("../models/Sensor");
+const Sensor = require("../models/sensor");
 
 // Biến lưu mốc thời gian lần cuối cùng ghi vào Database
 let lastSaveTime = 0; 

@@ -507,7 +507,7 @@ const bcrypt = require("bcryptjs");
 const User = require("./models/user");
 
 // Import các Model cần thiết để thao tác trực tiếp với Database
-const Sensor = require("./models/Sensor"); 
+const Sensor = require("./models/sensor"); 
 const SystemConfig = require("./models/systemConfig");
 
 // Route phục vụ Auth (Đăng nhập) và History (Tải lịch sử vẽ đồ thị)
