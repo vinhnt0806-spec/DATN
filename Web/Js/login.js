@@ -1,62 +1,38 @@
+// 1. Khai báo URL của server backend ở đầu file
+const BACKEND_URL = "https://datn-iot-server.onrender.com";
+
 // LOGIN
 document.getElementById("form-login")
 .addEventListener("submit", async (e) => {
-
     e.preventDefault();
 
-    // Lấy dữ liệu từ input
-    const email =
-        document.getElementById("email").value;
-
-    const password =
-        document.getElementById("password").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
     try {
-
-        // Gửi request login lên server
-        const response = await fetch("/login", {
-
+        // 2. Sửa fetch: thay "/login" bằng "${BACKEND_URL}/login"
+        const response = await fetch(`${BACKEND_URL}/login`, {
             method: "POST",
-
             headers: {
-
-                "Content-Type":
-                    "application/json"
+                "Content-Type": "application/json"
             },
-
             body: JSON.stringify({
-
                 email: email,
-
                 password: password
-
             })
         });
 
-        // Nhận dữ liệu từ server
         const data = await response.json();
 
-        // Login thành công
         if (data.success) {
-
             alert(data.message);
-
-            // Chuyển sang dashboard
-            window.location.href =
-                "Client1.html";
-
+            window.location.href = "Client1.html";
         }
-
-        // Login thất bại
         else {
-
             alert(data.message);
         }
-
     } catch (err) {
-
         console.log(err);
-
         alert("Không thể kết nối server");
     }
 });
