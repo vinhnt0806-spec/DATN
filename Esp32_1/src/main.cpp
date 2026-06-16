@@ -577,8 +577,8 @@ const char* password = "999999999";
 // const char* password = "12345679";
 
 // WebSocket Config
-const char* ws_server = "10.219.42.111";
-const int ws_port = 8084; 
+const char* ws_server = "datn-iot-hcmute.onrender.com";
+const int ws_port = 443;
 
 WebSocketsClient webSocket; 
 bool isWsConnected = false; 
@@ -595,7 +595,7 @@ bool isWsConnected = false;
 #define BTN_SPRAY 18
 #define BTN_LIGHT 5
 #define BTN_FAN 4
-#define BTN_STEPPER 33
+#define BTN_STEPPER 15
 #define BTN_SCREEN 12
 
 // SENSORS
@@ -604,7 +604,7 @@ bool isWsConnected = false;
 #define SOIL_PIN 34
 
 // LED WIFI
-#define LED_WIFI_GREEN 15
+#define LED_WIFI_GREEN 33
 #define LED_WIFI_RED 32
 
 // UART2
@@ -668,6 +668,7 @@ unsigned long lastButtonPressTime = 0;
 unsigned long lastScreenDebounce = 0;
 unsigned long lastDebounce[6] = {0};
 const int debounceDelay = 100; 
+bool isWaitingInitialSync = false; // Cờ kiểm tra gói sync đầu tiên khi mới kết nối
 
 // Hàm gửi trạng thái MODE lên Server qua WebSocket
 void sendMode()
@@ -886,22 +887,26 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
     case WStype_DISCONNECTED:
       Serial.println("[WS] Đã ngắt kết nối tới Server!");
       isWsConnected = false;
+      isWaitingInitialSync = false; // Reset cờ khi mất mạng
       break;
       
     case WStype_CONNECTED:
       Serial.println("[WS] Kết nối thành công tới Server WebSocket!");
       isWsConnected = true;
       
-      // Đồng bộ toàn bộ trạng thái hiện tại lên khi vừa kết nối
-      lastModeS  = !mode;
-      lastPumpS  = !pump;
-      lastSprayS = !spray;
-      lastLightS = !light;
-      lastFanS   = !fan;
-      lastShadeS = !shade;
-      sendMode();
-      sendControl();
-      sendSensor();
+      // 🔥 BẬT CỜ: Báo hiệu gói 'sync' sắp tới là gói đầu tiên khi mới kết nối
+      isWaitingInitialSync = true; 
+      
+      // Chủ động gửi request_sync lên Server để xin cấu hình
+      {
+        JsonDocument syncReqDoc;
+        syncReqDoc["event"] = "request_sync";
+        
+        String jsonReq;
+        serializeJson(syncReqDoc, jsonReq);
+        webSocket.sendTXT(jsonReq);
+        Serial.println("📤 [WS] Đã gửi 'request_sync' (Bật cờ chỉ xin cấu hình ngưỡng)...");
+      }
       break;
       
     case WStype_TEXT:
@@ -921,145 +926,121 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
       String eventType = doc["event"] | "";
       
       // =======================================================================
-      // 1. NHẬN GÓI CÀI ĐẶT NGƯỠNG TỰ ĐỘNG
+      // 1. NHẬN GÓI CÀI ĐẶT NGƯỠNG TỰ ĐỘNG (Khi Web thay đổi riêng lẻ ngưỡng)
       // =======================================================================
       if (eventType == "threshold")
       {
-        // Sử dụng toán tử '|': Tự động ép kiểu sang float, không gây warning, 
-        // nếu thiếu key thì giữ nguyên giá trị cũ của biến.
-        nhietdoTren = doc["temperatureUpper"]    | nhietdoTren;
-        doamkkTren  = doc["humidityUpper"]       | doamkkTren;
-        doamdatTren = doc["soilMoistureUpper"]   | doamdatTren;
-        anhsangTren = doc["lightIntensityUpper"] | anhsangTren;
+        if (doc.containsKey("temperatureUpper"))   nhietdoTren = doc["temperatureUpper"];
+        if (doc.containsKey("humidityUpper"))      doamkkTren  = doc["humidityUpper"];
+        if (doc.containsKey("soilMoistureUpper"))  doamdatTren = doc["soilMoistureUpper"];
+        if (doc.containsKey("lightIntensityUpper")) anhsangTren = doc["lightIntensityUpper"];
 
-        nhietdoDuoi = doc["temperatureLower"]    | nhietdoDuoi;
-        doamkkDuoi  = doc["humidityLower"]       | doamkkDuoi;
-        doamdatDuoi = doc["soilMoistureLower"]   | doamdatDuoi;
-        anhsangDuoi = doc["lightIntensityLower"] | anhsangDuoi;
+        if (doc.containsKey("temperatureLower"))   nhietdoDuoi = doc["temperatureLower"];
+        if (doc.containsKey("humidityLower"))      doamkkDuoi  = doc["humidityLower"];
+        if (doc.containsKey("soilMoistureLower"))  doamdatDuoi = doc["soilMoistureLower"];
+        if (doc.containsKey("lightIntensityLower")) anhsangDuoi = doc["lightIntensityLower"];
         
         Serial.println("🟢 Cập nhật ngưỡng tự động thành công!");
       }
       
       // =======================================================================
-      // 2. NHẬN GÓI THAY ĐỔI RIÊNG MODE (AUTO/MANUAL)
+      // 2. NHẬN GÓI THAY ĐỔI RIÊNG MODE (AUTO/MANUAL từ Web)
       // =======================================================================
       else if (eventType == "mode")
       {
-        mode = doc["mode"] | mode; // Tự động ép kiểu sang int ngầm định an toàn
-        lastModeS = mode; // Cập nhật cờ đồng bộ nút bấm cơ
-        
-        Serial.print("🟢 Đồng bộ chế độ hệ thống: ");
-        Serial.println(mode == 0 ? "AUTO" : "MANUAL");
+        if (doc.containsKey("mode")) {
+          mode = doc["mode"];
+          lastModeS = mode; 
+          Serial.print("🟢 Đồng bộ chế độ hệ thống: ");
+          Serial.println(mode == 0 ? "AUTO" : "MANUAL");
+        }
       }
       
       // =======================================================================
-      // 3. NHẬN GÓI ĐIỀU KHIỂN THIẾT BỊ (MANUAL TỪ WEB)
+      // 3. NHẬN GÓI ĐIỀU KHIỂN THIẾT BỊ (MANUAL từ Web)
       // =======================================================================
       else if (eventType == "control")
       {
         Serial.println("🟢 Nhận lệnh điều khiển thiết bị từ Web!");
         
-        // Với kiểu Bool, so sánh trực tiếp '== 1' trả về bool chuẩn 
-        // nên trình biên dịch sẽ không báo warning.
         if (doc.containsKey("bom"))       pump      = (doc["bom"] == 1);
         if (doc.containsKey("phunsuong")) spray     = (doc["phunsuong"] == 1);
         if (doc.containsKey("den"))       light     = (doc["den"] == 1);
         if (doc.containsKey("quat"))      fan       = (doc["quat"] == 1);
         if (doc.containsKey("manche"))    shade     = (doc["manche"] == 1);
         
-        // Cập nhật các cờ kiểm tra nút nhấn cơ
         lastPumpS  = pump;
         lastSprayS = spray;
         lastLightS = light;
         lastFanS   = fan;
         lastShadeS = shade;
-        
-        Serial.printf("[DEBUG] Trạng thái sau đồng bộ -> Bom:%d, Phun:%d, Den:%d, Quat:%d, Manche:%d\n", pump, spray, light, fan, shade);
       }
+      
       // =======================================================================
-      // ESP32 NHẬN YÊU CẦU ĐỒNG BỘ TỪ WEB
-      // =======================================================================
-      else if (eventType == "request_sync")
-      {
-          Serial.println("🔄 Web/App yêu cầu đồng bộ!");
-
-          JsonDocument syncDoc;
-
-          syncDoc["event"] = "sync";
-          syncDoc["mode"] = mode;
-
-          JsonObject sensorData = syncDoc["sensorData"].to<JsonObject>();
-          sensorData["nhietdo"] = nhietdo;
-          sensorData["doamkk"] = doamkk;
-          sensorData["doamdat"] = doamdat;
-          sensorData["anhsang"] = anhsang;
-
-          JsonObject control = syncDoc["control"].to<JsonObject>();
-          control["bom"] = pump ? 1 : 0;
-          control["phunsuong"] = spray ? 1 : 0;
-          control["den"] = light ? 1 : 0;
-          control["quat"] = fan ? 1 : 0;
-          control["manche"] = shade ? 1 : 0;
-
-          JsonObject thresholds = syncDoc["thresholds"].to<JsonObject>();
-          thresholds["temperatureUpper"] = nhietdoTren;
-          thresholds["temperatureLower"] = nhietdoDuoi;
-
-          thresholds["humidityUpper"] = doamkkTren;
-          thresholds["humidityLower"] = doamkkDuoi;
-
-          thresholds["soilMoistureUpper"] = doamdatTren;
-          thresholds["soilMoistureLower"] = doamdatDuoi;
-
-          thresholds["lightIntensityUpper"] = anhsangTren;
-          thresholds["lightIntensityLower"] = anhsangDuoi;
-
-          String json;
-          serializeJson(syncDoc, json);
-
-          webSocket.sendTXT(json);
-
-          Serial.println("✅ Đã gửi dữ liệu thực tế lên Server");
-      }
-      // =======================================================================
-      // 4. NHẬN GÓI ĐỒNG BỘ TỔNG THỂ KHI MỚI KẾT NỐI VÀO MẠNG
+      // 4. 🔥 XỬ LÝ ĐA NHIỆM GÓI "sync" BẰNG CỜ HIỆU
       // =======================================================================
       else if (eventType == "sync")
       {
-        mode = doc["mode"] | mode;
-        lastModeS = mode;
-        
-        // Đồng bộ trạng thái thiết bị trong Object lồng "control"
-        if (doc.containsKey("control")) {
-          JsonObject ctrl = doc["control"];
-          if (ctrl.containsKey("bom"))       pump      = (ctrl["bom"] == 1);
-          if (ctrl.containsKey("phunsuong")) spray     = (ctrl["phunsuong"] == 1);
-          if (ctrl.containsKey("den"))       light     = (ctrl["den"] == 1);
-          if (ctrl.containsKey("quat"))      fan       = (ctrl["quat"] == 1);
-          if (ctrl.containsKey("manche"))    shade     = (ctrl["manche"] == 1);
+        if (isWaitingInitialSync) 
+        {
+          // TRƯỜNG HỢP A: MỚI KẾT NỐI MẠNG -> CHỈ LẤY NGƯỠNG CÀI ĐẶT
+          Serial.println("📥 [WS] Gói sync đầu tiên (Sau Reconnect) -> Chỉ cập nhật Ngưỡng.");
+
+          if (doc.containsKey("thresholds")) {
+            JsonObject th = doc["thresholds"];
+            if (th.containsKey("temperatureUpper"))   nhietdoTren = th["temperatureUpper"];
+            if (th.containsKey("humidityUpper"))      doamkkTren  = th["humidityUpper"];
+            if (th.containsKey("soilMoistureUpper"))  doamdatTren = th["soilMoistureUpper"];
+            if (th.containsKey("lightIntensityUpper")) anhsangTren = th["lightIntensityUpper"];
+
+            if (th.containsKey("temperatureLower"))   nhietdoDuoi = th["temperatureLower"];
+            if (th.containsKey("humidityLower"))      doamkkDuoi  = th["humidityLower"];
+            if (th.containsKey("soilMoistureLower"))  doamdatDuoi = th["soilMoistureLower"];
+            if (th.containsKey("lightIntensityLower")) anhsangDuoi = th["lightIntensityLower"];
+          }
           
-          lastPumpS  = pump;
-          lastSprayS = spray;
-          lastLightS = light;
-          lastFanS   = fan;
-          lastShadeS = shade;
-        }
+          isWaitingInitialSync = false; // 🔥 HẠ CỜ: Các gói sync sau này sẽ nhận tuốt
+          Serial.println("🔄 Đã đồng bộ bộ ngưỡng ban đầu thành công!");
+        } 
+        else 
+        {
+          // TRƯỜNG HỢP B: ĐANG CHẠY BÌNH THƯỜNG MÀ CÓ SYNC -> DO WEB APP BẤM NÚT -> NHẬN HẾT
+          Serial.println("📥 [WS] Gói sync thời gian thực (Web/App bấm nút) -> Cập nhật toàn bộ.");
 
-        // Đồng bộ các ngưỡng cài đặt trong Object lồng "thresholds"
-        if (doc.containsKey("thresholds")) {
-          JsonObject th = doc["thresholds"];
-          nhietdoTren = th["temperatureUpper"]    | nhietdoTren;
-          doamkkTren  = th["humidityUpper"]       | doamkkTren;
-          doamdatTren = th["soilMoistureUpper"]   | doamdatTren;
-          anhsangTren = th["lightIntensityUpper"] | anhsangTren;
+          if (doc.containsKey("mode")) {
+            mode = doc["mode"];
+            lastModeS = mode;
+          }
+          
+          if (doc.containsKey("control")) {
+            JsonObject ctrl = doc["control"];
+            if (ctrl.containsKey("bom"))       pump      = (ctrl["bom"] == 1);
+            if (ctrl.containsKey("phunsuong")) spray     = (ctrl["phunsuong"] == 1);
+            if (ctrl.containsKey("den"))       light     = (ctrl["den"] == 1);
+            if (ctrl.containsKey("quat"))      fan       = (ctrl["quat"] == 1);
+            if (ctrl.containsKey("manche"))    shade     = (ctrl["manche"] == 1);
+            
+            lastPumpS  = pump;
+            lastSprayS = spray;
+            lastLightS = light;
+            lastFanS   = fan;
+            lastShadeS = shade;
+          }
 
-          nhietdoDuoi = th["temperatureLower"]    | nhietdoDuoi;
-          doamkkDuoi  = th["humidityLower"]       | doamkkDuoi;
-          doamdatDuoi = th["soilMoistureLower"]   | doamdatDuoi;
-          anhsangDuoi = th["lightIntensityLower"] | anhsangDuoi;
+          if (doc.containsKey("thresholds")) {
+            JsonObject th = doc["thresholds"];
+            if (th.containsKey("temperatureUpper"))   nhietdoTren = th["temperatureUpper"];
+            if (th.containsKey("humidityUpper"))      doamkkTren  = th["humidityUpper"];
+            if (th.containsKey("soilMoistureUpper"))  doamdatTren = th["soilMoistureUpper"];
+            if (th.containsKey("lightIntensityUpper")) anhsangTren = th["lightIntensityUpper"];
+
+            if (th.containsKey("temperatureLower"))   nhietdoDuoi = th["temperatureLower"];
+            if (th.containsKey("humidityLower"))      doamkkDuoi  = th["humidityLower"];
+            if (th.containsKey("soilMoistureLower"))  doamdatDuoi = th["soilMoistureLower"];
+            if (th.containsKey("lightIntensityLower")) anhsangDuoi = th["lightIntensityLower"];
+          }
+          Serial.println("🔄 Đã đồng bộ lệnh điều khiển từ Web thành công!");
         }
-        
-        Serial.println("🔄 Đã đồng bộ cấu hình tổng thể thành công!");
       }
       break;
     } 
@@ -1265,9 +1246,9 @@ void setup() {
 // Serial.println(WiFi.localIP());
   
   // KHỞI TẠO WEBSOCKET CLIENT
-  webSocket.begin(ws_server, ws_port, "/"); 
-  webSocket.onEvent(webSocketEvent); 
-  webSocket.setReconnectInterval(5000); 
+  webSocket.beginSSL(ws_server, 443, "/");
+  webSocket.onEvent(webSocketEvent);
+  webSocket.setReconnectInterval(5000);
   
   lastShadeUART = shade;
 
