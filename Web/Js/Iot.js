@@ -506,7 +506,7 @@ function setupModeSwitch() {
 let myChart = null;
 // ĐỔI MỚI: Thêm biến lưu ngày hiện tại của biểu đồ (Định dạng DD/MM/YYYY)
 let currentChartDate = new Date().toLocaleDateString('vi-VN'); 
-const API_URL = `${BACKEND_URL}/api/history`;
+const API_URL = "https://datn-iot-hcmute.onrender.com/api/history";
 
 // Hàm kéo toàn bộ dữ liệu lịch sử và vẽ biểu đồ lần đầu
 async function loadAndDrawChart() {
