@@ -497,19 +497,20 @@
 //     ws.on('close', () => console.log("🔸 [WS] Thiết bị ngắt kết nối!"));
 // });
 
-require("dotenv").config(); // 🟢 Nạp biến môi trường từ file .env hoặc cấu hình Render
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const mongoose = require("mongoose");
-const http = require("http"); 
+const http = require("http"); // 🟢 BƯỚC 2: Thêm module http mặc định của Node.js
 const { WebSocketServer } = require("ws");
 const bcrypt = require("bcryptjs");
 const User = require("./models/user");
 
+// Import các Model cần thiết để thao tác trực tiếp với Database
 const Sensor = require("./models/sensor");
 const SystemConfig = require("./models/systemConfig");
 
+// Route phục vụ Auth (Đăng nhập) và History (Tải lịch sử vẽ đồ thị)
 const authRoutes = require("./routes/authRoutes");
 const sensorRoutes = require("./routes/sensorRoutes");
 
@@ -530,19 +531,19 @@ async function createAdmin() {
     }
 }
 
-const app = express(); 
-const port = process.env.PORT || 3000; 
+// 🟢 BƯỚC 2: Thay đổi cách khởi tạo để gom server
+const app = express(); // Đổi tên thành 'app' để phân biệt với HTTP Server bên dưới
+const port = process.env.PORT || 3000; // Tự động lấy port của hệ thống hoặc mặc định 3000
 
 app.use(express.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, "../Web")));
 
-// 🟢 BẢO MẬT: Lấy URI kết nối từ biến môi trường, tránh lộ mật khẩu
-const dbURI = process.env.MONGODB_URI;
-
+// KẾT NỐI MONGODB (Khuyên dùng biến môi trường .env khi public thực tế)
+const dbURI = "mongodb+srv://vinh8386:vinhnt0806@doantotnghiep.0swczoc.mongodb.net/vinh?retryWrites=true&w=majority&appName=Doantotnghiep";
 mongoose.connect(dbURI)
 .then(async () => {
-    console.log("🟢 Đã kết nối MongoDB thành công");
+    console.log("🟢 Đã kết nối MongoDB");
     await createAdmin();
 })
 .catch((err) => console.log("❌ Lỗi kết nối MongoDB:", err));
@@ -550,6 +551,7 @@ mongoose.connect(dbURI)
 app.use("/", authRoutes);
 app.use("/api", sensorRoutes); 
 
+// 🟢 BƯỚC 2: Tạo một HTTP Server bọc quanh Express App
 const server = http.createServer(app);
 
 // ========================================================
@@ -568,7 +570,7 @@ let dataStorage = {
 };
 let lastSaveTime = 0;
 
-// Nạp cấu hình Mode, Ngưỡng VÀ cả trạng thái Thiết bị cũ từ MongoDB vào RAM khi mở server
+// Nạp cấu hình Mode/Ngưỡng cũ từ MongoDB vào RAM ngay khi mở server
 (async () => {
     try {
         let config = await SystemConfig.findOne({ configId: "main_config" });
@@ -577,7 +579,6 @@ let lastSaveTime = 0;
             config = await SystemConfig.create({
                 configId: "main_config",
                 mode: 0,
-                control: { bom: 0, phunsuong: 0, den: 0, quat: 0, manche: 0 }, // Khởi tạo trường lưu trạng thái nút
                 thresholds: {
                     temperatureUpper: 0, temperatureLower: 0,
                     humidityUpper: 0, humidityLower: 0,
@@ -585,22 +586,18 @@ let lastSaveTime = 0;
                     lightIntensityUpper: 0, lightIntensityLower: 0
                 }
             });
-            console.log("✅ Đã tạo main_config mẫu ban đầu");
+            console.log("✅ Đã tạo main_config");
         }
-        
-        // Nạp ngược dữ liệu bền vững từ DB vào RAM để tránh lỗi mất đồng bộ khi Render bị Restart
         dataStorage.mode = config.mode || 0;
         if (config.thresholds) dataStorage.thresholds = config.thresholds;
-        if (config.control) dataStorage.control = config.control; // 🟢 Đồng bộ lại trạng thái nút bấm cũ
-        
-        console.log("🔄 Đã nạp thành công toàn bộ cấu hình vững bền từ Database vào RAM!");
+        console.log("🔄 Đã nạp cấu hình cũ từ Database vào RAM");
     } catch (err) {
-        console.log("❌ Lỗi nạp cấu hình hệ thống từ Database:", err);
+        console.log("❌ Lỗi nạp cấu hình:", err);
     }
 })();
 
 // ========================================================
-// KHỞI TẠO WEBSOCKET SERVER (CHẠY CÙNG PORT)
+// KHỞI TẠO WEBSOCKET SERVER (CHẠY CÙNG PORT 3000)
 // ========================================================
 const wss = new WebSocketServer({ server }); 
 
@@ -622,8 +619,11 @@ wss.on('connection', function connection(ws) {
             const { event, ...payloadData } = jsonData;
             
             switch (event) {
+                // 🔥 ĐÃ FIX LỖI ĐỒNG BỘ: Không broadcast bậy bạ lệnh request_sync nữa!
                 case 'request_sync':
-                    console.log("🔄 [WS] Một thiết bị (App/Web/ESP32) yêu cầu đồng bộ dữ liệu.");
+                    console.log("🔄 [WS] Một thiết bị (App/Web) vừa Reconnect và yêu cầu đồng bộ dữ liệu.");
+                    
+                    // Trả thẳng cục dữ liệu thực tế đang lưu trong RAM Server cho CHÍNH THẰNG ĐANG XIN (ws)
                     ws.send(JSON.stringify({
                         event: "sync",
                         mode: dataStorage.mode,
@@ -660,7 +660,7 @@ wss.on('connection', function connection(ws) {
                             console.log("💾 [WS -> DB] Đã tự động lưu dữ liệu cảm biến vào MongoDB");
                         }
                     } catch (dbErr) {
-                        console.error("❌ Lỗi ghi Database lịch sử cảm biến:", dbErr.message);
+                        console.error("❌ Lỗi ghi Database từ WebSocket:", dbErr.message);
                     }
                     break;
                     
@@ -668,63 +668,40 @@ wss.on('connection', function connection(ws) {
                     if (payloadData.mode !== undefined) {
                         dataStorage.mode = payloadData.mode;
                         broadcastData(jsonData);
-                        
-                        // 🟢 Bọc try..catch tránh sập nguồn server khi DB lỗi mạng
-                        try {
-                            await SystemConfig.updateOne(
-                                { configId: "main_config" },
-                                { $set: { mode: payloadData.mode } },
-                                { upsert: true }
-                            );
-                            console.log("⚙️ [DB] Đã cập nhật chế độ MODE bền vững");
-                        } catch (dbErr) {
-                            console.error("❌ [DB Lỗi] Không thể cập nhật MODE:", dbErr.message);
-                        }
+                        await SystemConfig.updateOne(
+                            { configId: "main_config" },
+                            { $set: { mode: payloadData.mode } },
+                            { upsert: true }
+                        );
                     }
                     break;
                     
                 case 'control':
                     Object.assign(dataStorage.control, payloadData);
                     broadcastData(jsonData);
-                    
-                    // 🟢 CẬP NHẬT THÊM: Lưu trạng thái thiết bị điều khiển xuống DB 
-                    // để phục hồi nguyên vẹn trạng thái nút bấm khi Render tự khởi động lại
-                    try {
-                        await SystemConfig.updateOne(
-                            { configId: "main_config" },
-                            { $set: { control: dataStorage.control } },
-                            { upsert: true }
-                        );
-                    } catch (dbErr) {
-                        console.error("❌ [DB Lỗi] Không thể cập nhật dữ liệu nút bấm CONTROL:", dbErr.message);
-                    }
                     break;
                     
                 case 'threshold':
                     Object.assign(dataStorage.thresholds, payloadData);
                     broadcastData(jsonData);
-                    
-                    // 🟢 Bọc try..catch tránh sập nguồn server khi DB lỗi mạng
-                    try {
-                        await SystemConfig.updateOne(
-                            { configId: "main_config" },
-                            { $set: { thresholds: dataStorage.thresholds } },
-                            { upsert: true }
-                        );
-                        console.log("⚙️ [WS -> DB] Đã lưu cập nhật TẤT CẢ các ngưỡng thành công!");
-                    } catch (dbErr) {
-                        console.error("❌ [DB Lỗi] Không thể lưu bộ NGƯỠNG cài đặt:", dbErr.message);
-                    }
+                    await SystemConfig.updateOne(
+                        { configId: "main_config" },
+                        { $set: { thresholds: dataStorage.thresholds } },
+                        { upsert: true }
+                    );
+                    console.log("⚙️ [WS -> DB] Đã cập nhật đồng bộ TẤT CẢ các ngưỡng vào Database thành công!");
                     break;
             }
         } catch (error) {
-            console.error("❌ [WS] Lỗi định dạng JSON lỗi hoặc xử lý sự kiện thất bại:", error.message);
+            console.error("❌ [WS] Lỗi JSON hoặc Xử lý:", error.message);
         }
     });
 
-    ws.on('close', () => console.log("🔸 [WS] Một thiết bị đã ngắt kết nối!"));
+    ws.on('close', () => console.log("🔸 [WS] Thiết bị ngắt kết nối!"));
 });
 
+// 🟢 BƯỚC 2: Gọi hàm lắng nghe từ HTTP server (quản lý chung cả Express lẫn WebSocket)
 server.listen(port, "0.0.0.0", () => {
-    console.log(`🚀 Server tổng hợp đang chạy hoàn hảo tại cổng: ${port}`);
+    console.log(`🚀 Server tổng hợp đang chạy tại http://localhost:${port}`);
+    console.log(`📡 Cả Web giao diện và ESP32 bây giờ đều kết nối chung qua một cổng này.`);
 });
