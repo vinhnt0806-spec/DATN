@@ -501,16 +501,14 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const mongoose = require("mongoose");
-const http = require("http"); // 🟢 BƯỚC 2: Thêm module http mặc định của Node.js
+const http = require("http");
 const { WebSocketServer } = require("ws");
 const bcrypt = require("bcryptjs");
 const User = require("./models/user");
 
-// Import các Model cần thiết để thao tác trực tiếp với Database
 const Sensor = require("./models/sensor");
 const SystemConfig = require("./models/systemConfig");
 
-// Route phục vụ Auth (Đăng nhập) và History (Tải lịch sử vẽ đồ thị)
 const authRoutes = require("./routes/authRoutes");
 const sensorRoutes = require("./routes/sensorRoutes");
 
@@ -531,15 +529,14 @@ async function createAdmin() {
     }
 }
 
-// 🟢 BƯỚC 2: Thay đổi cách khởi tạo để gom server
-const app = express(); // Đổi tên thành 'app' để phân biệt với HTTP Server bên dưới
-const port = process.env.PORT || 3000; // Tự động lấy port của hệ thống hoặc mặc định 3000
+const app = express();
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, "../Web")));
 
-// KẾT NỐI MONGODB (Khuyên dùng biến môi trường .env khi public thực tế)
+// KẾT NỐI MONGODB
 const dbURI = "mongodb+srv://vinh8386:vinhnt0806@doantotnghiep.0swczoc.mongodb.net/vinh?retryWrites=true&w=majority&appName=Doantotnghiep";
 mongoose.connect(dbURI)
 .then(async () => {
@@ -551,12 +548,9 @@ mongoose.connect(dbURI)
 app.use("/", authRoutes);
 app.use("/api", sensorRoutes); 
 
-// 🟢 BƯỚC 2: Tạo một HTTP Server bọc quanh Express App
 const server = http.createServer(app);
 
-// ========================================================
 // KHO LƯU TRỮ TẠM THỜI (RAM SERVER)
-// ========================================================
 let dataStorage = {
     mode: 0,
     sensorData: { nhietdo: 0, doamkk: 0, doamdat: 0, anhsang: 0 },
@@ -570,7 +564,7 @@ let dataStorage = {
 };
 let lastSaveTime = 0;
 
-// Nạp cấu hình Mode/Ngưỡng cũ từ MongoDB vào RAM ngay khi mở server
+// Nạp cấu hình Mode/Ngưỡng cũ từ MongoDB vào RAM
 (async () => {
     try {
         let config = await SystemConfig.findOne({ configId: "main_config" });
@@ -596,9 +590,7 @@ let lastSaveTime = 0;
     }
 })();
 
-// ========================================================
-// KHỞI TẠO WEBSOCKET SERVER (CHẠY CÙNG PORT 3000)
-// ========================================================
+// KHỞI TẠO WEBSOCKET SERVER
 const wss = new WebSocketServer({ server }); 
 
 wss.on('connection', function connection(ws) {
@@ -619,11 +611,23 @@ wss.on('connection', function connection(ws) {
             const { event, ...payloadData } = jsonData;
             
             switch (event) {
-                // 🔥 ĐÃ FIX LỖI ĐỒNG BỘ: Không broadcast bậy bạ lệnh request_sync nữa!
+                // =================================================================
+                // 🔥 THÊM MỚI: Xử lý gói trạng thái ban đầu từ ESP32 gửi lên
+                // =================================================================
+                case 'device_status':
+                    console.log("📥 [WS] Nhận trạng thái thiết bị thực tế từ ESP32!");
+                    if (payloadData.mode !== undefined) {
+                        dataStorage.mode = payloadData.mode;
+                    }
+                    if (payloadData.control) {
+                        Object.assign(dataStorage.control, payloadData.control);
+                    }
+                    // Bắn dữ liệu này sang cho Web để Web cập nhật giao diện
+                    broadcastData(jsonData);
+                    break;
+
                 case 'request_sync':
                     console.log("🔄 [WS] Một thiết bị (App/Web) vừa Reconnect và yêu cầu đồng bộ dữ liệu.");
-                    
-                    // Trả thẳng cục dữ liệu thực tế đang lưu trong RAM Server cho CHÍNH THẰNG ĐANG XIN (ws)
                     ws.send(JSON.stringify({
                         event: "sync",
                         mode: dataStorage.mode,
@@ -700,7 +704,6 @@ wss.on('connection', function connection(ws) {
     ws.on('close', () => console.log("🔸 [WS] Thiết bị ngắt kết nối!"));
 });
 
-// 🟢 BƯỚC 2: Gọi hàm lắng nghe từ HTTP server (quản lý chung cả Express lẫn WebSocket)
 server.listen(port, "0.0.0.0", () => {
     console.log(`🚀 Server tổng hợp đang chạy tại http://localhost:${port}`);
     console.log(`📡 Cả Web giao diện và ESP32 bây giờ đều kết nối chung qua một cổng này.`);

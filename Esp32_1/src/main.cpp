@@ -1,555 +1,30 @@
-// #include <Arduino.h>
-// #include <WiFi.h>
-// #include <Adafruit_Sensor.h>
-// #include <DHT.h>
-// #include <DHT_U.h>
-// #include <BH1750.h>
 // #include <Wire.h>
 // #include <Adafruit_GFX.h>
 // #include <Adafruit_SH110X.h>
-// #include <HTTPClient.h>
-// #include <ArduinoJson.h>
 
-// // wifi
-// // const char* ssid = "abc";
-// // const char* password = "12345679";
+// Adafruit_SH1106G display(128,64,&Wire,-1);
 
-// const char* ssid = "Galaxy A06 5G 9754";
-// const char* password = "999999999";
-// // server
-// String server = "http://10.219.42.111:3000";
-
-// // RELAY
-// #define PUMP  25
-// #define SPRAY 26
-// #define LIGHT 27
-// #define FAN   14
-
-// // BUTTONS
-// #define BTN_MODE 23
-// #define BTN_PUMP 19
-// #define BTN_SPRAY 18
-// #define BTN_LIGHT 5
-// #define BTN_FAN 4
-// #define BTN_STEPPER 15
-// #define BTN_SCREEN 12  // FIX: Thêm chân nút nhấn chuyển màn hình (Nối chân 12 và GND)
-
-// // sensor
-// #define DHTPIN 13
-// #define DHTTYPE DHT22
-// #define SOIL_PIN 34
-
-// // led wifi
-// #define LED_WIFI_GREEN 33
-// #define LED_WIFI_RED 32
-
-// // Định nghĩa chân UART2
-// #define RXD2 16
-// #define TXD2 17
-
-// // màn hình oled
-// #define SCREEN_WIDTH 128
-// #define SCREEN_HEIGHT 64
-// Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
-
-// DHT dht(DHTPIN, DHTTYPE);
-// BH1750 lightMeter(0x23);
-
-// // control
-// bool pump  = 0;
-// bool spray = 0;
-// bool light = 0;
-// bool fan   = 0;
-// bool shade = 0;
-// int  mode  = 0;
-
-// // BUTTON STATES
-// bool lastMode = HIGH;
-// bool lastPump = HIGH;
-// bool lastSpray = HIGH;
-// bool lastLight = HIGH;
-// bool lastFan = HIGH;
-// bool lastShade = HIGH;
-// bool lastScreenBtn = HIGH; // FIX: Trạng thái nút chuyển màn hình cũ
-
-// int currentScreen = 0;     // FIX: Biến lưu màn hình hiện tại (0: Màn hình chính, 1: Màn hình phụ)
-
-// // trạng thái cũ
-// bool lastPumpS  = 0;
-// bool lastSprayS = 0;
-// bool lastLightS = 0;
-// bool lastFanS   = 0;
-// bool lastModeS  = 0;
-// bool lastShadeS = 0;
-// bool lastShadeUART = 0;
-
-// // GÁN GIÁ TRỊ MẶC ĐỊNH CHO CÁC NGƯỠNG
-// float nhietdoTren = 35.0;
-// float doamkkTren = 80.0;
-// float doamdatTren = 70.0;
-// float anhsangTren = 1000.0;
-
-// float nhietdoDuoi = 25.0;
-// float doamkkDuoi = 50.0;
-// float doamdatDuoi = 40.0;
-// float anhsangDuoi = 200.0;
-
-// // sensor
-// float nhietdo = 0.0;
-// float doamkk = 0.0;
-// float doamdat = 0.0;
-// float anhsang = 0.0;
-
-// unsigned long lastButtonPressTime = 0;
-// unsigned long lastScreenDebounce = 0;
-
-// unsigned long lastDebounce[6] = {0};
-// const int debounceDelay = 50; // ms
-
-// void sendControl() 
+// void setup()
 // {
-//   if (WiFi.status() != WL_CONNECTED) return;
-
-//   if (pump != lastPumpS || spray != lastSprayS || light != lastLightS || fan != lastFanS || shade != lastShadeS || mode != lastModeS)
-//   {
-//     HTTPClient http;
-//     http.begin(server + "/control");
-//     http.setConnectTimeout(150);
-//     http.setTimeout(150);
-//     http.addHeader("Content-Type", "application/json");
-
-//     String json = "{";
-//     json += "\"bom\":" + String(pump) + ",";
-//     json += "\"phunsuong\":" + String(spray) + ",";
-//     json += "\"den\":" + String(light) + ",";
-//     json += "\"quat\":" + String(fan) + ",";
-//     json += "\"manche\":" + String(shade) + ",";
-//     json += "\"mode\":" + String(mode);
-//     json += "}";
-
-//     int httpCode = http.POST(json);
-//     http.end();
-
-//     lastPumpS = pump;
-//     lastSprayS = spray;
-//     lastLightS = light;
-//     lastFanS = fan;
-//     lastShadeS = shade;
-//     lastModeS = mode;
-//   }
-// }
-
-// void sendSensor() 
-// {
-//   if (WiFi.status() != WL_CONNECTED) return;
-
-//   HTTPClient http;
-//   http.begin(server + "/update-sensor");
-//   http.setConnectTimeout(150);
-//   http.setTimeout(150);
-//   http.addHeader("Content-Type", "application/json");
-
-//   String json = "{";
-//   json += "\"nhietdo\":" + String(nhietdo) + ",";
-//   json += "\"doamkk\":" + String(doamkk) + ",";
-//   json += "\"doamdat\":" + String(doamdat) + ",";
-//   json += "\"anhsang\":" + String(anhsang);
-//   json += "}";
-
-//   http.POST(json);
-//   http.end();
-// }
-
-// void getServer() 
-// {
-//   if (WiFi.status() != WL_CONNECTED) return;
-
-//   HTTPClient http;
-//   http.begin(server + "/data");
-//   http.setConnectTimeout(150);
-//   http.setTimeout(150);
-//   int code = http.GET();
-
-//   if (code == 200) {
-//     String payload = http.getString();
-//     JsonDocument doc;
-//     DeserializationError err = deserializeJson(doc, payload);
-//     if (err) {
-//       Serial.println("JSON error");
-//       http.end();
-//       return;
-//     }
-  
-//     nhietdoTren = doc["thresholds"]["temperatureUpper"] | nhietdoTren;
-//     doamkkTren = doc["thresholds"]["humidityUpper"] | doamkkTren;
-//     doamdatTren = doc["thresholds"]["soilMoistureUpper"] | doamdatTren;
-//     anhsangTren = doc["thresholds"]["lightIntensityUpper"] | anhsangTren;
-
-//     nhietdoDuoi = doc["thresholds"]["temperatureLower"] | nhietdoDuoi;
-//     doamkkDuoi = doc["thresholds"]["humidityLower"] | doamkkDuoi;
-//     doamdatDuoi = doc["thresholds"]["soilMoistureLower"] | doamdatDuoi;
-//     anhsangDuoi = doc["thresholds"]["lightIntensityLower"] | anhsangDuoi;
-
-//     JsonObject pc = doc["control"];
-//     if (!pc.isNull()) 
-//     {
-//       mode = doc["system"]["mode"] | mode;
-//       if (millis() - lastButtonPressTime > 1000)
-//       {
-//         pump  = (int)pc["bom"];
-//         spray = (int)pc["phunsuong"];
-//         light = (int)pc["den"];
-//         fan   = (int)pc["quat"];
-//         shade = (int)pc["manche"];
-//       }
-//     }
-//   }
-//   http.end();
-// }
-
-// void autoControl() 
-// {
-//   bool oldPump  = pump;
-//   bool oldSpray = spray;
-//   bool oldLight = light;
-//   bool oldFan   = fan;
-//   bool oldShade = shade;
-
-//   if (mode == 0) 
-//   {
-//     if (doamdat < doamdatDuoi) { pump = 1; }
-//     else if (doamdat > doamdatTren) { pump = 0; }
-
-//     if (doamkk < doamkkDuoi) { spray = 1; }
-//     else if (doamkk > doamkkTren) { spray = 0; }
-
-//     if (anhsang < anhsangDuoi) { light = 1;} 
-//     else if (anhsang > (anhsangDuoi + 200.0)) { light = 0; }
-
-//     if (nhietdo > nhietdoTren) { fan = 1; }
-//     else if (nhietdo < nhietdoDuoi) { fan = 0; } 
-
-//     if (anhsang > anhsangTren) { shade = 1; }
-//     else if (anhsang < (anhsangTren - 200.0)) { shade = 0; }
-//   }
-//   if (pump != oldPump || spray != oldSpray || light != oldLight || fan != oldFan || shade != oldShade)
-//   {
-//     sendControl();
-//   }
-// }
-
-// void handleBtn(int pin, bool &last, bool &state, int index) {
-//   bool current = digitalRead(pin);
-//   if (last == HIGH && current == LOW) {
-//     if (millis() - lastDebounce[index] > debounceDelay) {
-//       state = !state;
-//       lastButtonPressTime = millis();
-//       sendControl(); 
-//       lastDebounce[index] = millis();
-//     }
-//   }
-//   last = current;
-// }
-
-// void handleModeBtn(int pin, bool &last, int &mode, int index) {
-//   bool current = digitalRead(pin);
-//   if (last == HIGH && current == LOW) {
-//     if (millis() - lastDebounce[index] > debounceDelay) {
-//       mode = (mode == 0) ? 1 : 0;
-//       lastButtonPressTime = millis();
-//       sendControl();
-//       lastDebounce[index] = millis();
-//     }
-//   }
-//   last = current;
-// }
-
-// // FIX: Hàm xử lý nút bấm chuyển đổi màn hình (0 -> 1 -> 0)
-// void handleScreenBtn(int pin, bool &last, int &screen, int index) {
-//   bool current = digitalRead(pin);
-//   if (last == HIGH && current == LOW) {
-//     if (millis() - lastDebounce[index] > debounceDelay) {
-//       screen = (screen == 0) ? 1 : 0; 
-//       lastDebounce[index] = millis();
-//     }
-//   }
-//   last = current;
-// }
-
-// void screenControl()
-// {
-//     bool current = digitalRead(BTN_SCREEN);
-//     if (lastScreenBtn == HIGH && current == LOW)
-//     {
-//         if (millis() - lastScreenDebounce > debounceDelay)
-//         {
-//             currentScreen++;
-//             if (currentScreen > 2)
-//             {
-//                 currentScreen = 0;
-//             }
-//             lastScreenDebounce = millis();
-//         }
-//     }
-//     lastScreenBtn = current;
-// }
-
-// void buttonControl() {
-//   // MODE và nút CHUYỂN MÀN HÌNH luôn luôn hoạt động độc lập
-//   handleModeBtn(BTN_MODE, lastMode, mode, 0);
-
-//   // chỉ manual mới điều khiển thiết bị từ nút nhấn
-//   if (mode == 1) {
-//     handleBtn(BTN_PUMP, lastPump, pump, 1);
-//     handleBtn(BTN_SPRAY, lastSpray, spray, 2);
-//     handleBtn(BTN_LIGHT, lastLight, light, 3);
-//     handleBtn(BTN_FAN, lastFan, fan, 4);
-//     handleBtn(BTN_STEPPER, lastShade, shade, 5);
-//   }
-// }
-
-// void Shade()
-// {
-//   if (shade != lastShadeUART) {
-//     Serial.print("GUI UART: ");
-//     Serial.println(shade);
-//     if (shade == 1) {
-//         Serial.println("UART2: Gui lenh '1' (Dong mai che)");
-//         Serial2.print('1');
-//     } else if(shade == 0) {
-//         Serial.println("UART2: Gui lenh '0' (Mo mai che)");
-//         Serial2.print('0');
-//     }
-//     lastShadeUART = shade;
-//   }
-// }
-
-// void getSensor()
-// {
-//   float temp_nhietdo = dht.readTemperature();
-//   float temp_doam = dht.readHumidity();
-
-//   if (!isnan(temp_nhietdo) && !isnan(temp_doam)) {
-//     nhietdo = temp_nhietdo;
-//     doamkk = temp_doam;
-//   } else {
-//     Serial.println("Loi doc DHT!");
-//   }
-  
-//   anhsang = lightMeter.readLightLevel();
-//   int DatValue = analogRead(SOIL_PIN);
-//   doamdat = (100 - ((DatValue / 4095.00) * 100));
-//   if(doamdat < 0) doamdat = 0;
-//   if(doamdat > 100) doamdat = 100;
-// }
-
-// void setup() {
 //   Serial.begin(115200);
-//   Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);
 
-//   pinMode(PUMP, OUTPUT);
-//   pinMode(SPRAY, OUTPUT);
-//   pinMode(LIGHT, OUTPUT);
-//   pinMode(FAN, OUTPUT);
+//   Wire.begin(21,22);
 
-//   pinMode(LED_WIFI_GREEN, OUTPUT);
-//   pinMode(LED_WIFI_RED, OUTPUT);
-
-//   digitalWrite(PUMP, HIGH);
-//   digitalWrite(SPRAY, HIGH);
-//   digitalWrite(LIGHT, HIGH);
-//   digitalWrite(FAN, HIGH);
-
-//   pinMode(BTN_MODE, INPUT_PULLUP);
-//   pinMode(BTN_PUMP, INPUT_PULLUP);
-//   pinMode(BTN_SPRAY, INPUT_PULLUP);
-//   pinMode(BTN_LIGHT, INPUT_PULLUP);
-//   pinMode(BTN_FAN, INPUT_PULLUP);
-//   pinMode(BTN_STEPPER, INPUT_PULLUP);
-//   pinMode(BTN_SCREEN, INPUT_PULLUP);
-
-//   dht.begin();
-//   Wire.begin(21, 22);
-//   lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE);
-//   display.begin(0x3C, true);
+//   if(!display.begin(0x3C,true))
+//   {
+//     Serial.println("OLED fail");
+//     while(1);
+//   }
 
 //   display.clearDisplay();
-//   display.setTextColor(SH110X_WHITE);
-
 //   display.setTextSize(2);
-//   display.setCursor(15, 20);
-//   display.println("START");
+//   display.setTextColor(SH110X_WHITE);
+//   display.setCursor(0,20);
+//   display.println("HELLO");
 //   display.display();
-
-//   delay(500);
-//   WiFi.begin(ssid, password);
-//   lastShadeUART = shade;
 // }
 
-// // LOOP
-// void loop()
-// {
-//   static unsigned long lastReconnect = 0;
-//   static unsigned long lastSensor = 0;
-//   static unsigned long lastServer = 0;
-//   static unsigned long lastOLED = 0;
-
-//   // Xử lý WiFi
-//   if (WiFi.status() != WL_CONNECTED)
-//   {
-//     digitalWrite(LED_WIFI_GREEN, LOW);
-//     digitalWrite(LED_WIFI_RED, HIGH);
-    
-//     if (millis() - lastReconnect > 10000) 
-//     {
-//       Serial.println("Reconnecting to WiFi...");
-//       WiFi.disconnect();
-//       WiFi.begin(ssid, password);
-//       lastReconnect = millis();
-//     }
-//   } else {
-//     digitalWrite(LED_WIFI_GREEN, HIGH);
-//     digitalWrite(LED_WIFI_RED, LOW);
-//   }
-
-//   // Cập nhật cảm biến mỗi 2s
-//   if (millis() - lastSensor > 2000)
-//   {
-//     lastSensor = millis();
-//     getSensor();
-//     sendSensor();
-//   }
-
-//   // Cập nhật dữ liệu từ server mỗi 1s
-//   if (millis() - lastServer > 1000)
-//   {
-//     lastServer = millis();
-//     getServer();
-//   }
-
-//   screenControl();
-//   // Quét phím liên tục
-//   buttonControl();
-
-//   if (mode == 0)
-//   {
-//     autoControl();
-//   }
-  
-//   Shade();
-
-//   // Xuất tín hiệu ra Relay
-//   digitalWrite(PUMP, !pump);
-//   digitalWrite(SPRAY, !spray);
-//   digitalWrite(LIGHT, !light);
-//   digitalWrite(FAN, !fan);
-
-//   // FIX: Xử lý giao diện đa màn hình OLED (Cập nhật mỗi 500ms)
-//   if (millis() - lastOLED > 500)
-//   {
-//     lastOLED = millis();
-//     display.clearDisplay();
-//     display.setTextSize(1);
-    
-//     if (currentScreen == 0) 
-//     {
-//       display.setCursor(10, 0);
-//       display.println("HE THONG GIAM SAT");
-
-//       display.setCursor(0, 10);
-//       display.print("MODE: ");
-//       if (mode == 0) 
-//       display.println("AUTO");
-//       else 
-//       display.println("MANUAL");
-      
-//       display.setCursor(0, 20);
-//       display.print("Nhietdo:"); 
-//       display.print(nhietdo, 1); 
-//       display.write(247);
-//       display.print("C"); 
-
-//       display.setCursor(0, 30);
-//       display.print("Doamkk:"); 
-//       display.print(doamkk, 1); 
-//       display.print("%");
-
-//       display.setCursor(0, 40);
-//       display.print("Doamdat:"); 
-//       display.print(doamdat, 1); 
-//       display.print("%"); 
-
-//       display.setCursor(0, 50);
-//       display.print("As:"); 
-//       display.print(anhsang, 1); 
-//       display.print("lux");
-//     }
-//     else if(currentScreen == 1)
-//     {
-//       display.setCursor(10, 0);
-//       display.println("NGUONG CAI DAT");
-
-//       display.setCursor(40, 10);
-//       display.print("Duoi");
-//       display.setCursor(90, 10);
-//       display.print("Tren");
-
-//       display.setCursor(0, 20);
-//       display.print("Nhietdo: ");
-//       display.print(nhietdoDuoi, 1); 
-//       display.setCursor(90, 20);
-//       display.print(nhietdoTren, 1); 
-
-//       display.setCursor(0, 30);
-//       display.print("Doamkk: ");
-//       display.print(doamkkDuoi, 1); 
-//       display.setCursor(90, 30);
-//       display.print(doamkkTren, 1);
-
-//       display.setCursor(0, 40);
-//       display.print("Doamdat: ");
-//       display.print(doamdatDuoi, 1); 
-//       display.setCursor(90, 40);
-//       display.print(doamdatTren, 1); 
-
-//       display.setCursor(0, 50);
-//       display.print("anhsang: ");
-//       display.print(anhsangDuoi, 1);
-//       display.setCursor(90, 50);
-//       display.print(anhsangTren, 1);
-//     }
-//     else if(currentScreen == 2)
-//     {
-//       display.setCursor(0, 0);
-//       display.print("MODE: ");
-//       if (mode == 0) 
-//       display.println("AUTO");
-//       else 
-//       display.println("MANUAL");
-
-//       display.setCursor(0, 10);
-//       display.print("Bom: ");
-//       display.println(pump ? "ON" : "OFF");
-
-//       display.setCursor(0, 20);
-//       display.print("Phun: ");
-//       display.println(spray ? "ON" : "OFF");
-
-//       display.setCursor(0, 30);
-//       display.print("Den: ");
-//       display.println(light ? "ON" : "OFF");
-
-//       display.setCursor(0, 40);
-//       display.print("Quat: ");
-//       display.println(fan ? "ON" : "OFF");
-
-//       display.setCursor(0, 50);
-//       display.print("Manche: ");
-//       display.println(shade ? "ON" : "OFF");
-//     }
-//   }
-//     display.display();
-// }
+// void loop(){}
 
 #include <Arduino.h>
 #include <WiFi.h>
@@ -648,15 +123,15 @@ bool lastShadeS = 0;
 bool lastShadeUART = 0;
 
 // Thresholds
-float nhietdoTren = 35.0;
+float nhietdoTren = 40.0;
 float doamkkTren = 80.0;
 float doamdatTren = 70.0;
-float anhsangTren = 1000.0;
+float anhsangTren = 3000.0;
 
 float nhietdoDuoi = 25.0;
 float doamkkDuoi = 50.0;
-float doamdatDuoi = 40.0;
-float anhsangDuoi = 200.0;
+float doamdatDuoi = 0.0;
+float anhsangDuoi = 2000.0;
 
 // Sensor Values
 float nhietdo = 0.0;
@@ -979,7 +454,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
       // =======================================================================
       // 4. 🔥 XỬ LÝ ĐA NHIỆM GÓI "sync" BẰNG CỜ HIỆU
       // =======================================================================
-      else if (eventType == "sync")
+      else if (eventType == "sync") 
       {
         if (isWaitingInitialSync) 
         {
@@ -1208,10 +683,10 @@ void setup() {
   pinMode(LED_WIFI_GREEN, OUTPUT);
   pinMode(LED_WIFI_RED, OUTPUT);
 
-  digitalWrite(PUMP, HIGH);
-  digitalWrite(SPRAY, HIGH);
-  digitalWrite(LIGHT, HIGH);
-  digitalWrite(FAN, HIGH);
+  digitalWrite(PUMP, LOW);
+  digitalWrite(SPRAY, LOW);
+  digitalWrite(LIGHT, LOW);
+  digitalWrite(FAN, LOW);
 
   pinMode(BTN_MODE, INPUT_PULLUP);
   pinMode(BTN_PUMP, INPUT_PULLUP);
@@ -1323,10 +798,10 @@ void loop()
   
   Shade();
 
-  digitalWrite(PUMP, !pump);
-  digitalWrite(SPRAY, !spray);
-  digitalWrite(LIGHT, !light);
-  digitalWrite(FAN, !fan);
+  digitalWrite(PUMP, pump);
+  digitalWrite(SPRAY, spray);
+  digitalWrite(LIGHT, light);
+  digitalWrite(FAN, fan);
 
   // Cập nhật hiển thị OLED màn hình mỗi 500ms
   if (millis() - lastOLED > 500)

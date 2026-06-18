@@ -263,6 +263,19 @@ function connectWebSocket() {
             const eventType = data.event;
 
             switch (eventType) {
+                // 🔥 THÊM MỚI: Xử lý khi nhận được trạng thái thực tế từ ESP32
+                case 'device_status':
+                    console.log("📥 Cập nhật UI từ trạng thái thực tế của ESP32:", data);
+                    if (data.mode !== undefined) {
+                        currentMode = Number(data.mode);
+                    }
+                    if (data.control) {
+                        Object.assign(control, data.control);
+                    }
+                    updateModeUI();
+                    updateDeviceSwitches();
+                    break;
+
                 case 'sync': 
                     console.log("🔄 Đã đồng bộ dữ liệu hệ thống:", data);
                     if (data.mode !== undefined) currentMode = Number(data.mode);
