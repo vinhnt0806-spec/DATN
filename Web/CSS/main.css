@@ -8,14 +8,9 @@
     --text-muted: #64748b;
     --text-sidebar: #94a3b8;
     
-    --primary: #10b981;         /* Xanh lá rực rỡ (Emerald Green) */
+    --primary: #10b981;          /* Xanh lá rực rỡ (Emerald Green) */
     --primary-dark: #059669;    /* Xanh lá đậm */
     --highlight: #facc15;       /* Màu Vàng Gold để nổi bật tên Đồ Án */
-    
-    --color-temp: #ef4444;      /* Đỏ */
-    --color-humid: #0ea5e9;     /* Xanh Cyan */
-    --color-soil: #8b5cf6;      /* Tím */
-    --color-light: #f59e0b;     /* Vàng cam */
 
     --border-color: #e2e8f0;
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -27,7 +22,9 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Inter', sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    /* 🌟 Bỏ in đậm mặc định của các thẻ tiêu đề h1-h4, strong */
+    font-weight: normal; 
 }
 
 body {
@@ -43,7 +40,6 @@ body {
 }
 
 /* === SIDEBAR === */
-/* === SIDEBAR - ĐÃ ĐỔI SANG TÔNG SÁNG & CHỮ ĐẬM === */
 .sidebar {
     width: 280px;
     background-color: var(--bg-sidebar);
@@ -54,51 +50,50 @@ body {
     position: fixed;
     height: 100vh;
     z-index: 100;
-    /* Đổ bóng nhẹ nhàng sang bên phải, tạo chiều sâu tách biệt với nội dung */
     box-shadow: 4px 0 25px rgba(16, 185, 129, 0.04); 
     border-right: 1px solid #e2e8f0; 
 }
 
 .sidebar-header {
+    display: flex;             /* 🌟 Thêm dòng này */
+    flex-direction: column;    /* 🌟 Thêm dòng này để xếp hàng dọc */
+    align-items: center;       /* 🌟 Thêm dòng này để canh giữa logo và chữ */
+    text-align: center;        /* 🌟 Thêm dòng này để căn giữa văn bản */
     margin-bottom: 40px;
     padding-bottom: 20px;
-    border-bottom: 1px solid #f1f5f9; /* Viền chia mờ tinh tế */
 }
 
 .brand h2 {
     font-size: 24px;
-    font-weight: 800;
+    font-weight: normal; /* Đã sửa thành chữ mảnh */
     letter-spacing: 0.5px;
-    color: #10b981; /* Xanh lá rực rỡ thương hiệu */
+    color: #10b981;
 }
 
 .brand-sub {
     font-size: 12px;
-    color: #64748b; /* Xám thanh lịch */
+    color: #64748b;
     margin-top: 4px;
     margin-left: 38px;
-    font-weight: 600;
+    font-weight: normal; /* Đã sửa thành chữ mảnh */
 }
 
 .project-info h3 {
-    font-size: 13px;
+    font-size: 20px;
     text-transform: uppercase;
-    color: #ea580c; /* Màu Cam Cháy cực kỳ nổi bật cho chữ ĐỒ ÁN TỐT NGHIỆP */
+    color: #06860b;
     letter-spacing: 1px;
     margin-bottom: 12px;
-    font-weight: 800;
+    font-weight: 700; /* Đã sửa thành chữ mảnh */
+    text-align: center;
 }
 
-/* === SỬA LỖI XUỐNG HÀNG & GIỮ CHỮ MÀU ĐEN === */
 .team-info p {
-    font-size: 13px;
-    color: #000000;             /* Đảm bảo chữ GVHD, SVTH màu ĐEN TUYỀN */
+    font-size: 14px;
+    color: #000000;
     margin-bottom: 14px;
     line-height: 1.6;
-    border-bottom: 1px dashed #e2e8f0; 
     padding-bottom: 8px;
-    
-    /* Sử dụng Grid để phân chia 2 cột rõ ràng, nhãn một bên, tên một bên */
     display: grid;
     grid-template-columns: 65px 1fr; 
     gap: 10px;
@@ -106,33 +101,32 @@ body {
 }
 
 .team-info strong {
-    color: #000000;             /* Giữ tên giảng viên, sinh viên màu ĐEN */
-    font-weight: 700;
-    text-align: right;          /* Đẩy tên về phía bên phải giống giao diện cũ */
-    word-break: break-word;     /* Nếu tên quá dài sẽ xuống hàng cực kỳ gọn gàng */
+    color: #000000;
+    font-weight: 700; /* Đã sửa thành chữ mảnh */
+    text-align: right;
+    word-break: break-word;
 }
 
-/* Cập nhật lại màu đen cho các phần chữ khác trong Sidebar nếu cần */
 .project-name {
-    font-size: 16px;
-    font-weight: 800;
+    font-size: 18px;
+    font-weight: 700; /* Đã sửa thành chữ mảnh */
     line-height: 1.5;
     margin-bottom: 28px;
-    color: #000000;             /* Tên đồ án màu ĐEN */
+    color: #000000;
+    text-align: center;
 }
 
-/* Tùy chỉnh lại khung trạng thái hệ thống cho hợp với nền sáng */
 .system-status {
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 12px;
-    background: #dcfce7; /* Nền xanh lá nhạt */
+    background: #dcfce7;
     border: 1px solid #bbf7d0;
     border-radius: 8px;
     font-size: 14px;
     color: #16a34a;
-    font-weight: 600;
+    font-weight: normal; /* Đã sửa thành chữ mảnh */
 }
 
 .status-indicator.online {
@@ -165,8 +159,8 @@ body {
 }
 
 .top-nav h1 {
-    font-size: 24px;
-    font-weight: 800;
+    font-size: 30px;
+    font-weight: normal; /* Đã sửa thành chữ mảnh */
     color: var(--text-main);
 }
 
@@ -183,7 +177,7 @@ body {
 
 .mode-label {
     font-size: 14px;
-    font-weight: 600;
+    font-weight: normal; /* Đã sửa thành chữ mảnh */
     color: var(--text-muted);
 }
 
@@ -206,15 +200,15 @@ body {
 }
 
 .section-title {
-    font-size: 16px;
-    font-weight: 800;
+    font-size: 24px;
+    font-weight: 700; /* Đã sửa thành chữ mảnh */
     color: var(--text-main);
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 2px solid #f1f5f9;
+    text-align: center;
 }
 
-/* === SENSOR CARDS (ĐÃ SỬA CHỮ/SỐ THÀNH MÀU ĐEN TOÀN BỘ) === */
+/* === SENSOR CARDS === */
 .sensor-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -249,18 +243,22 @@ body {
     background: white;
     box-shadow: var(--shadow-sm);
 }
-
+.sensor-info {
+    flex: 1; /* 🌟 THÊM DÒNG NÀY: Ép hộp chữ giãn rộng ra thì mới căn giữa được */
+}
 .sensor-info h3 {
-    font-size: 13px;
-    color: #000000; /* Màu Đen */
-    font-weight: 600;
+    font-size: 18px;
+    color: #000000;
+    font-weight: normal; /* Đã sửa thành chữ mảnh */
     margin-bottom: 4px;
+    text-align: center;
 }
 
 .sensor-info .value {
     font-size: 24px;
-    font-weight: 800;
-    color: #000000; /* Màu Đen */
+    font-weight: 600; /* Đã sửa thành chữ mảnh */
+    color: #000000;
+    text-align: center;
 }
 
 /* === ĐIỀU KHIỂN THIẾT BỊ === */
@@ -278,7 +276,18 @@ body {
     background: #f8fafc;
     border-radius: 10px;
     border: 1px solid var(--border-color);
-    transition: all 0.2s;
+    /* THÊM DÒNG NÀY ĐỂ FIX LỖI LỆCH: */
+    flex-wrap: nowrap; 
+    gap: 10px; 
+}
+
+/* Thêm đoạn này để ép nút bấm luôn đứng yên 1 chỗ, không bị ảnh hưởng bởi chữ */
+.modern-switch {
+    flex-shrink: 0; /* 🌟 QUAN TRỌNG: Nút bấm sẽ không bao giờ bị co lại hoặc lệch */
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 24px;
 }
 
 .control-card:hover {
@@ -294,8 +303,8 @@ body {
 }
 
 .control-header h4 {
-    font-size: 14px;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: normal; /* Đã sửa thành chữ mảnh */
     color: var(--text-main);
 }
 
@@ -315,19 +324,14 @@ body {
     padding: 16px;
     border-radius: 10px;
     border: 1px solid var(--border-color);
-    border-left: 4px solid var(--primary);
 }
 
-.setting-group.temp-set { border-left-color: var(--color-temp); }
-.setting-group.humid-set { border-left-color: var(--color-humid); }
-.setting-group.soil-set { border-left-color: var(--color-soil); }
-.setting-group.light-set { border-left-color: var(--color-light); }
-
 .setting-group h4 {
-    font-size: 14px;
-    font-weight: 700;
+    font-size: 18px;
+    font-weight: normal; /* Đã sửa thành chữ mảnh */
     margin-bottom: 12px;
     color: var(--text-main);
+    text-align: center;
 }
 
 .input-row {
@@ -346,7 +350,7 @@ body {
     padding: 8px 12px;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 14px;
     outline: none;
     transition: all 0.2s;
 }
@@ -357,11 +361,13 @@ body {
 }
 
 .current-set {
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 16px;
+    font-weight: 700; /* Đã sửa thành chữ mảnh */
     color: var(--primary-dark);
-    min-width: 45px;
     text-align: right;
+    min-width: 70px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 /* === MODERN TOGGLE SWITCH === */
@@ -401,7 +407,7 @@ body {
 }
 
 input:checked + .modern-slider {
-    background-color: var(--primary); /* Chuyển sang xanh lá khi bật */
+    background-color: var(--primary);
 }
 
 input:checked + .modern-slider:before {
@@ -436,5 +442,47 @@ input:checked + .modern-slider:before {
         flex-direction: column;
         align-items: flex-start;
         gap: 15px;
+    }
+}
+
+/* === CHARTS === */
+.charts-wrapper {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    width: 100%;
+    margin-top: 15px;
+    box-sizing: border-box;
+}
+
+.chart-container {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    min-width: 0; 
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-container h3 {
+    text-align: center;
+    font-size: 18px;
+    font-weight: normal; /* Đã sửa thành chữ mảnh */
+    color: #333333;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.chart-container canvas {
+    width: 100% !important;
+    height: auto !important;
+}
+
+@media (max-width: 1024px) {
+    .charts-wrapper {
+        grid-template-columns: 1fr;
     }
 }

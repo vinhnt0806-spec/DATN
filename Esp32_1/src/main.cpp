@@ -1,31 +1,3 @@
-// #include <Wire.h>
-// #include <Adafruit_GFX.h>
-// #include <Adafruit_SH110X.h>
-
-// Adafruit_SH1106G display(128,64,&Wire,-1);
-
-// void setup()
-// {
-//   Serial.begin(115200);
-
-//   Wire.begin(21,22);
-
-//   if(!display.begin(0x3C,true))
-//   {
-//     Serial.println("OLED fail");
-//     while(1);
-//   }
-
-//   display.clearDisplay();
-//   display.setTextSize(2);
-//   display.setTextColor(SH110X_WHITE);
-//   display.setCursor(0,20);
-//   display.println("HELLO");
-//   display.display();
-// }
-
-// void loop(){}
-
 #include <Arduino.h>
 #include <WiFi.h>
 #include <Adafruit_Sensor.h>
@@ -215,147 +187,6 @@ void sendSensor()
   webSocket.sendTXT(json); 
 }
 
-// Hàm xử lý các sự kiện từ WebSocket Server
-// void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) 
-// {
-//   switch(type) {
-//     case WStype_DISCONNECTED:
-//       Serial.println("[WS] Đã ngắt kết nối tới Server!");
-//       isWsConnected = false;
-//       break;
-      
-//     case WStype_CONNECTED:
-//       Serial.println("[WS] Kết nối thành công tới Server WebSocket!");
-//       isWsConnected = true;
-      
-//       // Đồng bộ toàn bộ trạng thái hiện tại lên khi vừa kết nối
-//       lastModeS  = !mode;
-//       lastPumpS  = !pump;
-//       lastSprayS = !spray;
-//       lastLightS = !light;
-//       lastFanS   = !fan;
-//       lastShadeS = !shade;
-//       sendMode();
-//       sendControl();
-//       sendSensor();
-//       break;
-      
-//     case WStype_TEXT:
-//     { 
-//       Serial.print("[WS] Nhận dữ liệu thô: ");
-//       Serial.write(payload, length);
-//       Serial.println();
-
-//       JsonDocument doc;
-//       DeserializationError err = deserializeJson(doc, payload, length);
-//       if (err) {
-//         Serial.print("[❌ LỖI] Phân tích JSON thất bại: ");
-//         Serial.println(err.c_str());
-//         return;
-//       }
-
-//       String eventType = doc["event"] | "";
-      
-//       // 1. NHẬN GÓI CÀI ĐẶT NGƯỠNG TỰ ĐỘNG
-//       if (eventType == "threshold")
-//       {
-//         if (doc.containsKey("temperatureUpper"))    nhietdoTren = doc["temperatureUpper"].as<float>();
-//         if (doc.containsKey("humidityUpper"))       doamkkTren  = doc["humidityUpper"].as<float>();
-//         if (doc.containsKey("soilMoistureUpper"))   doamdatTren = doc["soilMoistureUpper"].as<float>();
-//         if (doc.containsKey("lightIntensityUpper")) anhsangTren = doc["lightIntensityUpper"].as<float>();
-
-//         if (doc.containsKey("temperatureLower"))    nhietdoDuoi = doc["temperatureLower"].as<float>();
-//         if (doc.containsKey("humidityLower"))       doamkkDuoi  = doc["humidityLower"].as<float>();
-//         if (doc.containsKey("soilMoistureLower"))   doamdatDuoi = doc["soilMoistureLower"].as<float>();
-//         if (doc.containsKey("lightIntensityLower")) anhsangDuoi = doc["lightIntensityLower"].as<float>();
-//         Serial.println("🟢 Cập nhật ngưỡng tự động thành công!");
-//       }
-      
-//       // 2. NHẬN GÓI THAY ĐỔI RIÊNG MODE (AUTO/MANUAL)
-//       else if (eventType == "mode")
-//       {
-//         if (doc.containsKey("mode")) {
-//           mode = doc["mode"].as<int>();
-//           lastModeS = mode; // Cập nhật cờ để nút nhấn cơ không bị xung đột
-//         }
-//         Serial.print("🟢 Đồng bộ chế độ hệ thống: ");
-//         Serial.println(mode == 0 ? "AUTO" : "MANUAL");
-//       }
-      
-//       // 3. NHẬN GÓI ĐIỀU KHIỂN THIẾT BỊ (MANUAL BẰNG TAY TỪ WEB)
-//       else if (eventType == "control")
-//       {
-//         Serial.println("🟢 Nhận lệnh điều khiển thiết bị từ Web!");
-        
-//         // Trích xuất an toàn bằng ép kiểu rõ ràng, loại bỏ hoàn toàn lỗi toán tử '|'
-//         if (doc.containsKey("bom"))       pump      = (doc["bom"].as<int>() == 1);
-//         if (doc.containsKey("phunsuong")) spray     = (doc["phunsuong"].as<int>() == 1);
-//         if (doc.containsKey("den"))       light     = (doc["den"].as<int>() == 1);
-//         if (doc.containsKey("quat"))      fan       = (doc["quat"].as<int>() == 1);
-//         if (doc.containsKey("manche"))    shade     = (doc["manche"].as<int>() == 1);
-        
-//         // QUAN TRỌNG: Cập nhật cờ kiểm tra ngay lập tức để đồng bộ với nút nhấn cơ trên mạch
-//         lastPumpS  = pump;
-//         lastSprayS = spray;
-//         lastLightS = light;
-//         lastFanS   = fan;
-//         lastShadeS = shade;
-        
-//         Serial.printf("[DEBUG] Trạng thái sau đồng bộ -> Bom:%d, Phun:%d, Den:%d, Quat:%d, Manche:%d\n", pump, spray, light, fan, shade);
-//       }
-      
-//       // 4. NHẬN GÓI ĐỒNG BỘ TỔNG THỂ KHI MỚI KẾT NỐI VÀO MẠNG
-//       else if (eventType == "sync")
-//       {
-//         if (doc.containsKey("mode")) {
-//           mode = doc["mode"].as<int>();
-//           lastModeS = mode;
-//         }
-        
-//         // Đồng bộ trạng thái thiết bị ON/OFF trong Object lồng "control"
-//         if (doc.containsKey("control")) {
-//           JsonObject ctrl = doc["control"];
-//           if (ctrl.containsKey("bom"))       pump      = (ctrl["bom"].as<int>() == 1);
-//           if (ctrl.containsKey("phunsuong")) spray     = (ctrl["phunsuong"].as<int>() == 1);
-//           if (ctrl.containsKey("den"))       light     = (ctrl["den"].as<int>() == 1);
-//           if (ctrl.containsKey("quat"))      fan       = (ctrl["quat"].as<int>() == 1);
-//           if (ctrl.containsKey("manche"))    shade     = (ctrl["manche"].as<int>() == 1);
-          
-//           lastPumpS  = pump;
-//           lastSprayS = spray;
-//           lastLightS = light;
-//           lastFanS   = fan;
-//           lastShadeS = shade;
-//         }
-
-//         // Đồng bộ các ngưỡng cài đặt trong Object lồng "thresholds"
-//         if (doc.containsKey("thresholds")) {
-//           JsonObject th = doc["thresholds"];
-//           if (th.containsKey("temperatureUpper"))    nhietdoTren = th["temperatureUpper"].as<float>();
-//           if (th.containsKey("humidityUpper"))       doamkkTren  = th["humidityUpper"].as<float>();
-//           if (th.containsKey("soilMoistureUpper"))   doamdatTren = th["soilMoistureUpper"].as<float>();
-//           if (th.containsKey("lightIntensityUpper")) anhsangTren = th["lightIntensityUpper"].as<float>();
-
-//           if (th.containsKey("temperatureLower"))    nhietdoDuoi = th["temperatureLower"].as<float>();
-//           if (th.containsKey("humidityLower"))       doamkkDuoi  = th["humidityLower"].as<float>();
-//           if (th.containsKey("soilMoistureLower"))   doamdatDuoi = th["soilMoistureLower"].as<float>();
-//           if (th.containsKey("lightIntensityLower")) anhsangDuoi = th["lightIntensityLower"].as<float>();
-//         }
-        
-//         Serial.println("🔄 Đã đồng bộ cấu hình tổng thể thành công!");
-//       }
-//       break;
-//     } 
-
-//     case WStype_BIN:
-//       break;
-      
-//     case WStype_ERROR:
-//       Serial.println("[WS] Gặp lỗi kết nối!");
-//       break;
-//   }
-// }
-
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) 
 {
   switch(type) {
@@ -372,7 +203,9 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
       // 🔥 BẬT CỜ: Báo hiệu gói 'sync' sắp tới là gói đầu tiên khi mới kết nối
       isWaitingInitialSync = true; 
       
-      // Chủ động gửi request_sync lên Server để xin cấu hình
+      // -----------------------------------------------------------------
+      // 1. CHỦ ĐỘNG XIN NGƯỠNG TỪ SERVER
+      // -----------------------------------------------------------------
       {
         JsonDocument syncReqDoc;
         syncReqDoc["event"] = "request_sync";
@@ -380,7 +213,29 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
         String jsonReq;
         serializeJson(syncReqDoc, jsonReq);
         webSocket.sendTXT(jsonReq);
-        Serial.println("📤 [WS] Đã gửi 'request_sync' (Bật cờ chỉ xin cấu hình ngưỡng)...");
+        Serial.println("📤 [WS] Đã gửi 'request_sync' (Xin cấu hình ngưỡng)...");
+      }
+      
+      // -----------------------------------------------------------------
+      // 2. 🔥 CẬP NHẬT TRẠNG THÁI THIẾT BỊ LÊN SERVER (Vừa cấp điện/Kết nối lại)
+      // -----------------------------------------------------------------
+      {
+        JsonDocument statusDoc;
+        // LƯU Ý: Thay "device_status" thành tên event mà Server của bạn đang đợi nhận
+        statusDoc["event"] = "device_status"; 
+        statusDoc["mode"]  = mode;
+        
+        // Đóng gói trạng thái bật/tắt của các thiết bị (1: ON, 0: OFF)
+        statusDoc["control"]["bom"]       = pump ? 1 : 0;
+        statusDoc["control"]["phunsuong"] = spray ? 1 : 0;
+        statusDoc["control"]["den"]       = light ? 1 : 0;
+        statusDoc["control"]["quat"]      = fan ? 1 : 0;
+        statusDoc["control"]["manche"]    = shade ? 1 : 0;
+        
+        String jsonStatus;
+        serializeJson(statusDoc, jsonStatus);
+        webSocket.sendTXT(jsonStatus);
+        Serial.println("📤 [WS] Đã cập nhật trạng thái thiết bị ban đầu lên Server!");
       }
       break;
       
@@ -472,6 +327,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
             if (th.containsKey("humidityLower"))      doamkkDuoi  = th["humidityLower"];
             if (th.containsKey("soilMoistureLower"))  doamdatDuoi = th["soilMoistureLower"];
             if (th.containsKey("lightIntensityLower")) anhsangDuoi = th["lightIntensityLower"];
+
           }
           
           isWaitingInitialSync = false; // 🔥 HẠ CỜ: Các gói sync sau này sẽ nhận tuốt
@@ -654,10 +510,7 @@ void getSensor()
   } else {
     Serial.println("Loi doc DHT!");
   }
-  
   anhsang = lightMeter.readLightLevel();
-
-  // ✅ Thuật toán lấy mẫu trung bình 20 lần để lọc nhiễu ADC độ ẩm đất
   long sum = 0;
   for (int i = 0; i < 20; i++)
   {
@@ -697,15 +550,13 @@ void setup() {
   pinMode(BTN_SCREEN, INPUT_PULLUP);
 
   dht.begin();
-  Wire.begin(21, 22);
+  Wire.begin(21,22);
   lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE);
   display.begin(0x3C, true);
-
   display.clearDisplay();
   display.setTextColor(SH110X_WHITE);
-  display.setTextSize(2);
   display.setCursor(15, 20);
-  display.println("START");
+  display.println("CONNECT");
   display.display();
 
   delay(500);
@@ -719,17 +570,12 @@ void setup() {
 // Serial.println();
 // Serial.print("WiFi OK, IP = ");
 // Serial.println(WiFi.localIP());
-  
-  // KHỞI TẠO WEBSOCKET CLIENT
-  webSocket.beginSSL(ws_server, 443, "/");
-  webSocket.onEvent(webSocketEvent);
-  webSocket.setReconnectInterval(5000);
-  
-  lastShadeUART = shade;
-
-  // ✅ Khởi tạo Watchdog Timer cho ESP32 cứu nguy khi hệ thống bị kẹt
-  esp_task_wdt_init(WDT_TIMEOUT, true); 
-  esp_task_wdt_add(NULL); // Thêm tiểu trình loop() hiện tại vào giám sát
+WiFi.begin(ssid, password);
+webSocket.beginSSL(ws_server, 443, "/");
+webSocket.onEvent(webSocketEvent);
+webSocket.setReconnectInterval(5000);
+esp_task_wdt_init(WDT_TIMEOUT, true);
+esp_task_wdt_add(NULL);
 }
 
 void loop()
@@ -749,7 +595,7 @@ void loop()
     digitalWrite(LED_WIFI_RED, HIGH);
     isWsConnected = false;
     
-    if (millis() - lastReconnect > 3000) 
+    if (millis() - lastReconnect > 10000)
     {
       Serial.println("Reconnecting to WiFi...");
       WiFi.disconnect();
@@ -794,6 +640,7 @@ void loop()
   if (mode == 0)
   {
     autoControl();
+
   }
   
   Shade();

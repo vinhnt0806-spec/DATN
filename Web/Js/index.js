@@ -26,7 +26,7 @@ document.getElementById("form-login")
 
         if (data.success) {
             alert(data.message);
-            window.location.href = "Client1.html";
+            window.location.href = "main.html";
         }
         else {
             alert(data.message);

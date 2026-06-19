@@ -114,6 +114,20 @@ useEffect(() => {
               });
             }
             break;
+            
+            case 'device_status':
+            console.log("📥 App cập nhật trạng thái thực tế từ ESP32:", data);
+            if (data.mode !== undefined) setMode(data.mode);
+            if (data.control) {
+              setDeviceState({
+                pump: data.control.bom === 1,
+                light: data.control.den === 1,
+                spray: data.control.phunsuong === 1,
+                fan: data.control.quat === 1,
+                shade: data.control.manche === 1,
+              });
+            }
+          break;
 
           case 'sensor': 
             setSensorData({

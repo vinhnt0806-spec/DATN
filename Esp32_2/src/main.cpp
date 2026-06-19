@@ -1,76 +1,3 @@
-// #include <Arduino.h>
-// #include <AccelStepper.h>
-
-// // =========================
-// // CẤU HÌNH STEP MOTOR
-// // =========================
-// #define IN1 33
-// #define IN2 25
-// #define IN3 26
-// #define IN4 27
-
-// #define ONE_TURN 8192
-
-// AccelStepper stepper(AccelStepper::FULL4WIRE, IN1, IN3, IN2, IN4);
-
-// // =========================
-// // CẤU HÌNH UART2
-// // =========================
-// #define RXD2 16
-// #define TXD2 17
-
-// // 🌟 BIẾN LINH CANH ĐỂ KHÓA TRẠNG THÁI (0: Đang mở, 1: Đang đóng)
-// int currentShadeState = 0; 
-
-// void setup()
-// {
-//     Serial.begin(115200);
-//     Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);
-
-//     // Cấu hình tốc độ motor (Có thể tăng lên chút cho quay nhanh hơn)
-//     stepper.setMaxSpeed(600);
-//     stepper.setAcceleration(300);
-
-//     Serial.println("ESP32 #2 READY - ĐÃ CÓ KHÓA CHỐNG BÃO LỆNH...");
-// }
-
-// void loop()
-// {
-//     if (Serial2.available() > 0)
-//     {
-//         // Đọc ngay 1 ký tự (char) từ bộ đệm UART
-//         char cmd = Serial2.read(); 
-
-//         Serial.print("Nhan: ");
-//         Serial.println(cmd);
-
-//         if (cmd == '1')
-//         {
-//             if (currentShadeState == 0)
-//             {
-//                 Serial.println("QUAY THUAN");
-
-//                 stepper.move(5500);
-//                 stepper.runToPosition();
-
-//                 currentShadeState = 1;
-//             }
-//         }
-//         else if (cmd == '0')
-//         {
-//             if (currentShadeState == 1)
-//             {
-//                 Serial.println("QUAY NGHICH");
-
-//                 stepper.move(-5500);
-//                 stepper.runToPosition();
-
-//                 currentShadeState = 0;
-//             }
-//         }
-//     }
-// }
-
 #include <Arduino.h>
 #include <AccelStepper.h>
 
@@ -156,6 +83,8 @@ void loop()
         {
             motorState = STOPPED;
             Serial.println("Dung");
+            // 🌟 Tắt điện động cơ khi nhận lệnh DỪNG khẩn cấp
+            stepper.disableOutputs(); 
         }
     }
 
@@ -168,6 +97,8 @@ void loop()
         {
             motorState = STOPPED;
             Serial.println("Da dong het");
+            // 🌟 Tắt điện động cơ khi đã đóng xong
+            stepper.disableOutputs(); 
         }
         else
         {
@@ -185,7 +116,8 @@ void loop()
         {
             motorState = STOPPED;
             Serial.println("Da mo het");
-            
+            // 🌟 Tắt điện động cơ khi đã mở xong
+            stepper.disableOutputs(); 
         }
         else
         {

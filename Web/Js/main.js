@@ -516,15 +516,31 @@ function setupModeSwitch() {
 // ========================================================
 // 5. QUẢN LÝ BIỂU ĐỒ (CHART.JS)
 // ========================================================
-let myChart = null;
-// ĐỔI MỚI: Thêm biến lưu ngày hiện tại của biểu đồ (Định dạng DD/MM/YYYY)
+let chartSensors = null; // Biểu đồ 1: Nhiệt độ, Độ ẩm KK, Độ ẩm Đất
+let chartLight = null;   // Biểu đồ 2: Ánh sáng
 let currentChartDate = new Date().toLocaleDateString('vi-VN'); 
 const API_URL = "https://datn-iot-hcmute.onrender.com/api/history";
 
-// Hàm kéo toàn bộ dữ liệu lịch sử và vẽ biểu đồ lần đầu
+// =========================================================================
+// 🛠️ CẤU HÌNH TOÀN CỤC CHO CHART.JS (ẨN CHẤM TRÒN & ĐỔI Ô VUÔNG THÀNH ĐƯỜNG THẲNG)
+// =========================================================================
+Chart.defaults.elements.line.borderWidth = 2;
+Chart.defaults.elements.point.radius = 0;       // Ẩn hoàn toàn các chấm tròn mặc định trên đường
+Chart.defaults.elements.point.hitRadius = 10;    // Rê chuột sát đường thẳng vẫn nhận diện được dữ liệu
+Chart.defaults.elements.point.hoverRadius = 5;   // Chỉ hiện chấm tròn nhỏ khi di chuột trúng đường thẳng
+
+Chart.defaults.plugins.legend.labels.usePointStyle = false; // Bật tính năng tùy biến ký hiệu chú thích
+Chart.defaults.plugins.legend.labels.pointStyle = 'line';  // Ép toàn bộ ô vuông thành nét gạch ngang
+Chart.defaults.plugins.legend.labels.boxWidth = 50;        // Độ dài của nét gạch ngang chú thích
+Chart.defaults.plugins.legend.labels.boxHeight = 1.2;
+
+
+// Hàm kéo toàn bộ dữ liệu lịch sử và vẽ 2 biểu đồ lần đầu
 async function loadAndDrawChart() {
-    const canvas = document.getElementById('sensorChart');
-    if (!canvas) return;
+    const canvasSensors = document.getElementById('sensorChart');
+    const canvasLight = document.getElementById('lightChart'); 
+    
+    if (!canvasSensors || !canvasLight) return;
 
     try {
         const response = await fetch(`${API_URL}?t=${new Date().getTime()}`, { 
@@ -538,15 +554,14 @@ async function loadAndDrawChart() {
         const doAmDatData = [];
         const anhSangData = []; 
 
-        // ĐỔI MỚI: Lấy chuỗi ngày hôm nay để so sánh
         const todayStr = new Date().toLocaleDateString('vi-VN');
-        currentChartDate = todayStr; // Đồng bộ lại mốc ngày hiện tại
+        currentChartDate = todayStr;
 
         historyData.forEach(item => {
             const dateObj = new Date(item.created_at);
             const itemDateStr = dateObj.toLocaleDateString('vi-VN');
 
-            // LỌC: Chỉ đẩy vào mảng vẽ biểu đồ nếu dữ liệu trùng với ngày hôm nay
+            // Lọc dữ liệu của ngày hôm nay
             if (itemDateStr === todayStr) {
                 const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 
@@ -558,26 +573,29 @@ async function loadAndDrawChart() {
             }
         });
 
-        if (myChart) {
-            myChart.destroy();
-        }
+        // Hủy biểu đồ cũ nếu đã tồn tại để vẽ lại
+        if (chartSensors) chartSensors.destroy();
+        if (chartLight) chartLight.destroy();
 
-        const ctx = canvas.getContext('2d');
-        myChart = new Chart(ctx, {
+        const ctxSensors = canvasSensors.getContext('2d');
+        const ctxLight = canvasLight.getContext('2d');
+
+        // 📊 BIỂU ĐỒ 1: NHIỆT ĐỘ & ĐỘ ẨM
+        chartSensors = new Chart(ctxSensors, {
             type: 'line',
             data: {
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Nhiệt độ (°C)',
+                        label: 'Temperature (°C)',
                         data: nhietDoData,
-                        borderColor: 'rgb(255, 99, 132)',
+                        borderColor: 'rgb(232, 29, 29)',
                         backgroundColor: 'rgba(255, 99, 132, 0.1)',
                         yAxisID: 'y',
                         tension: 0.3
                     },
                     {
-                        label: 'Độ ẩm KK (%)',
+                        label: 'Air Humidity (%)',
                         data: doAmKKData,
                         borderColor: 'rgb(54, 162, 235)',
                         backgroundColor: 'rgba(54, 162, 235, 0.1)',
@@ -585,94 +603,109 @@ async function loadAndDrawChart() {
                         tension: 0.3
                     },
                     {
-                        label: 'Độ ẩm Đất (%)',
+                        label: 'Soil Moisture (%)',
                         data: doAmDatData,
-                        borderColor: 'rgb(75, 192, 192)',
+                        borderColor: 'rgb(28, 204, 63)',
                         backgroundColor: 'rgba(75, 192, 192, 0.1)',
                         yAxisID: 'y1',
-                        tension: 0.3
-                    },
-                    {
-                        label: 'Ánh sáng (Lux)',
-                        data: anhSangData,
-                        borderColor: 'rgb(255, 205, 86)',
-                        backgroundColor: 'rgba(255, 205, 86, 0.1)',
-                        yAxisID: 'y2', 
                         tension: 0.3
                     }
                 ]
             },
             options: {
                 responsive: true,
-                interaction: {
-                    mode: 'index',
-                    intersect: false,
-                },
+                interaction: { mode: 'index', intersect: false },
                 scales: {
-                    x: {
-                        display: true,
-                        title: { display: true, text: 'Thời gian' }
-                    },
+                    x: { display: true, title: { display: true, text: 'Time' } },
                     y: {
                         type: 'linear',
                         display: true,
                         position: 'left',
-                        title: { display: true, text: 'Nhiệt độ (°C)' }
+                        title: { display: true, text: 'Temperature (°C)' }
                     },
                     y1: {
                         type: 'linear',
                         display: true,
                         position: 'right',
-                        title: { display: true, text: 'Độ ẩm (%)' },
-                        grid: { drawOnChartArea: false } 
-                    },
-                    y2: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        title: { display: true, text: 'Ánh sáng (Lux)' },
+                        title: { display: true, text: 'Humidity (%)' },
                         grid: { drawOnChartArea: false } 
                     }
                 }
             }
         });
-        console.log(`📊 Đã hiển thị dữ liệu lịch sử của ngày hôm nay (${todayStr})!`);
+
+        // 📊 BIỂU ĐỒ 2: ÁNH SÁNG (LUX)
+        chartLight = new Chart(ctxLight, {
+            type: 'line',
+            data: {
+                labels: labels, 
+                datasets: [
+                    {
+                        label: 'Light Intensity (Lux)',
+                        data: anhSangData,
+                        borderColor: 'rgb(227, 230, 26)',
+                        backgroundColor: 'rgba(255, 205, 86, 0.1)',
+                        yAxisID: 'y', 
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    x: { display: true, title: { display: true, text: 'Time' } },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Light Intensity (Lux)' }
+                    }
+                }
+            }
+        });
+
+        console.log(`📊 Đã hiển thị 2 phân hệ biểu đồ của ngày hôm nay (${todayStr})!`);
 
     } catch (error) {
-        console.error("❌ Lỗi khi tải dữ liệu biểu đồ:", error);
+        console.error("❌ Lỗi khi tải dữ liệu cấu trúc biểu đồ:", error);
     }
 }
 
-// Hàm bổ sung thêm điểm dữ liệu mới vào biểu đồ theo thời gian thực (Đã tối ưu)
+// Hàm cập nhật điểm dữ liệu mới realtime cho cả 2 biểu đồ
 function updateChartLive(newData) {
-    if (!myChart) return; 
+    if (!chartSensors || !chartLight) return; 
     
     const now = new Date();
     const todayStr = now.toLocaleDateString('vi-VN');
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     
-    // ĐỔI MỚI: KIỂM TRA SANG NGÀY MỚI (QUA 12H ĐÊM) -> RESET TRẮNG BIỂU ĐỒ
+    // Kiểm tra sang ngày mới -> Reset trắng cả 2 biểu đồ
     if (todayStr !== currentChartDate) {
-        console.log("📅 Đã bước sang ngày mới! Tiến hành reset biểu đồ...");
-        myChart.data.labels = []; // Xóa hết mốc thời gian cũ
-        myChart.data.datasets.forEach(dataset => {
-            dataset.data = []; // Xóa hết dữ liệu các cột cảm biến cũ
-        });
-        currentChartDate = todayStr; // Cập nhật mốc ngày mới
+        console.log("📅 Đã bước sang ngày mới! Reset dữ liệu đồ thị sổ dọc...");
+        
+        // Reset biểu đồ 1
+        chartSensors.data.labels = [];
+        chartSensors.data.datasets.forEach(dataset => dataset.data = []);
+        
+        // Reset biểu đồ 2
+        chartLight.data.labels = [];
+        chartLight.data.datasets.forEach(dataset => dataset.data = []);
+        
+        currentChartDate = todayStr;
     }
     
-    // Thêm dữ liệu thời gian thực mới vào cuối mảng
-    myChart.data.labels.push(timeStr);
-    myChart.data.datasets[0].data.push(newData.nhietdo);
-    myChart.data.datasets[1].data.push(newData.doamkk);
-    myChart.data.datasets[2].data.push(newData.doamdat);
-    myChart.data.datasets[3].data.push(newData.anhsang || 0); 
+    // 1. Đẩy dữ liệu vào Biểu đồ Nhiệt độ - Độ ẩm
+    chartSensors.data.labels.push(timeStr);
+    chartSensors.data.datasets[0].data.push(newData.nhietdo);
+    chartSensors.data.datasets[1].data.push(newData.doamkk);
+    chartSensors.data.datasets[2].data.push(newData.doamdat);
+    chartSensors.update();
     
-    // 💡 LƯU Ý: Đoạn code xóa điểm đầu tiên (.shift()) cũ đã được loại bỏ 
-    // nhằm mục đích lưu giữ toàn bộ các điểm dữ liệu trong ngày không bị mất đi.
-    
-    // Yêu cầu Chart.js vẽ lại trục đồ thị mới
-    myChart.update();
+    // 2. Đẩy dữ liệu vào Biểu đồ Ánh sáng
+    chartLight.data.labels.push(timeStr);
+    chartLight.data.datasets[0].data.push(newData.anhsang || 0); 
+    chartLight.update();
 }
 // ========================================================
 // 6. XUẤT DỮ LIỆU RA EXCEL

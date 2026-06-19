@@ -5,79 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SmartAgri - Hệ Thống Nông Nghiệp Thông Minh</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="CSS/test.css" />
+    <link rel="stylesheet" href="CSS/main.css" />
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 🌟 THÊM THƯ VIỆN EXCEL VÀO ĐÂY -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
     <div class="dashboard-layout">
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="brand">
-                    <img src="./image/logo_hcmute.png" class="logo" alt="HCMUTE" style="width: 50px; height: auto; margin-right: 10px;">
-                    <div>
-                        <h2>SmartAgri</h2>
-                        <p class="brand-sub">HCMUTE IOT System</p>
-                    </div>
+                    <img src="./image/logo_hcmute.png" class="logo" alt="HCMUTE" style="width: 100px; height: auto; margin-right: 20px;">
                 </div>
             </div>
 
             <div class="project-info">
                 <h3>ĐỒ ÁN TỐT NGHIỆP</h3>
-                <p class="project-name">Hệ Thống Tưới Tiêu Thông Minh Năng Lượng Mặt Trời</p>
+                <p class="project-name">HỆ THỐNG TƯỚI TIÊU TỰ ĐỘNG SỬ DỤNG NĂNG LƯỢNG MẶT TRỜI</p>
                 <div class="team-info">
-                    <p><strong>GVHD:</strong> TS. Thái Hoàng Linh</p>
+                    <p><strong>  GVHD:</strong> TS. Thái Hoàng Linh</p>
                     <p><strong>SVTH 1:</strong> Nguyễn Thành Vinh (22142435)</p>
                     <p><strong>SVTH 2:</strong> Nguyễn Ngọc Ý (22142440)</p>
                 </div>
             </div>
-
-            <!-- <div class="system-status">
-                <span class="status-indicator online"></span>
-                <span>Hệ thống đang Online</span>
-            </div> -->
         </aside>
 
         <main class="main-content">
             <header class="top-nav">
                 <h1>Tổng Quan Trạm Giám Sát</h1>
                 <div class="mode-control">
-                    <span class="mode-label">Tự động (Auto)</span>
+                    <span class="mode-label">Auto</span>
                     <label class="modern-switch" for="modeSwitch">
                         <input type="checkbox" id="modeSwitch" />
                         <span class="modern-slider"></span>
                     </label>
-                    <span class="mode-label">Thủ công (Manual)</span>
+                    <span class="mode-label">Manual</span>
                 </div>
             </header>
 
             <div class="dashboard-grid">
                 <section class="widget-section span-full">
-                    <h2 class="section-title">Thông Số Môi Trường</h2>
+                    <h2 class="section-title">DISPLAY SENSOR VALUE</h2>
                     <div class="sensor-grid">
                         <div class="sensor-card temp">
-                            <div class="sensor-icon">🌡️</div>
                             <div class="sensor-info">
-                                <h3>Nhiệt Độ</h3>
+                                <h3>🌡️ Temperature</h3>
                                 <div class="value" id="temperature">-- °C</div>
                             </div>
                         </div>
                         <div class="sensor-card humid">
-                            <div class="sensor-icon">💧</div>
                             <div class="sensor-info">
-                                <h3>Độ Ẩm Không Khí</h3>
+                                <h3>💧 Air Humidity</h3>
                                 <div class="value" id="humidity">-- %</div>
                             </div>
                         </div>
                         <div class="sensor-card soil">
-                            <div class="sensor-icon">🪴</div>
                             <div class="sensor-info">
-                                <h3>Độ Ẩm Đất</h3>
+                                <h3>🪴 Soil Moisture</h3>
                                 <div class="value" id="soilMoisture">-- %</div>
                             </div>
                         </div>
                         <div class="sensor-card light">
-                            <div class="sensor-icon">☀️</div>
                             <div class="sensor-info">
-                                <h3>Cường Độ Sáng</h3>
+                                <h3>☀️ Light Intensity</h3>
                                 <div class="value" id="lightIntensity">-- lux</div>
                             </div>
                         </div>
@@ -85,10 +76,10 @@
                 </section>
 
                 <section class="widget-section">
-                    <h2 class="section-title">Cài Đặt Ngưỡng Hoạt Động</h2>
+                    <h2 class="section-title">SETTING VALUES</h2>
                     <div class="settings-grid">
                         <div class="setting-group temp-set">
-                            <h4>Nhiệt Độ (°C)</h4>
+                            <h4>Temperature (°C)</h4>
                             <div class="input-row">
                                 <input type="number" id="setTemperatureUpper" placeholder="Ngưỡng cao" />
                                 <span id="temperatureUpper" class="current-set">--</span>
@@ -99,7 +90,7 @@
                             </div>
                         </div>
                         <div class="setting-group humid-set">
-                            <h4>Độ Ẩm KK (%)</h4>
+                            <h4>Air Humidity (%)</h4>
                             <div class="input-row">
                                 <input type="number" id="setHumidityUpper" placeholder="Ngưỡng cao" />
                                 <span id="humidityUpper" class="current-set">--</span>
@@ -110,7 +101,7 @@
                             </div>
                         </div>
                         <div class="setting-group soil-set">
-                            <h4>Độ Ẩm Đất (%)</h4>
+                            <h4>Soil Moisture (%)</h4>
                             <div class="input-row">
                                 <input type="number" id="setSoilMoistureUpper" placeholder="Ngưỡng cao" />
                                 <span id="soilMoistureUpper" class="current-set">--</span>
@@ -121,7 +112,7 @@
                             </div>
                         </div>
                         <div class="setting-group light-set">
-                            <h4>Ánh Sáng (lux)</h4>
+                            <h4>Light Intensity (lux)</h4>
                             <div class="input-row">
                                 <input type="number" id="setLightIntensityUpper" placeholder="Ngưỡng cao" />
                                 <span id="lightIntensityUpper" class="current-set">--</span>
@@ -135,12 +126,12 @@
                 </section>
 
                 <section class="widget-section">
-                    <h2 class="section-title">Điều Khiển Thiết Bị</h2>
+                    <h2 class="section-title">DEVICE CONTROL</h2>
                     <div class="control-grid">
                         <div class="control-card">
                             <div class="control-header">
                                 <span class="c-icon">🚰</span>
-                                <h4>Bơm Tưới</h4>
+                                <h4>Irrigation Pump</h4>
                             </div>
                             <label class="modern-switch">
                                 <input type="checkbox" id="togglePump" />
@@ -150,7 +141,7 @@
                         <div class="control-card">
                             <div class="control-header">
                                 <span class="c-icon">🌫️</span>
-                                <h4>Phun Sương</h4>
+                                <h4>Misting Pump</h4>
                             </div>
                             <label class="modern-switch">
                                 <input type="checkbox" id="toggleSpray" />
@@ -160,7 +151,7 @@
                         <div class="control-card">
                             <div class="control-header">
                                 <span class="c-icon">💡</span>
-                                <h4>Đèn</h4>
+                                <h4>Light</h4>
                             </div>
                             <label class="modern-switch">
                                 <input type="checkbox" id="toggleLight" />
@@ -170,7 +161,7 @@
                         <div class="control-card">
                             <div class="control-header">
                                 <span class="c-icon">🌀</span>
-                                <h4>Quạt Gió</h4>
+                                <h4>Fan</h4>
                             </div>
                             <label class="modern-switch">
                                 <input type="checkbox" id="toggleFan" />
@@ -180,7 +171,7 @@
                         <div class="control-card">
                             <div class="control-header">
                                 <span class="c-icon">⛺</span>
-                                <h4>Mái Che</h4>
+                                <h4>Shade</h4>
                             </div>
                             <label class="modern-switch">
                                 <input type="checkbox" id="toggleShade" />
@@ -190,9 +181,31 @@
                     </div>
                 </section>
 
+                <!-- 🌟 KHU VỰC ĐỒ THỊ ĐÃ THÊM NÚT EXPORT EXCEL -->
+                <section class="widget-section span-full">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 class="section-title" style="margin-bottom: 0;">REAL-TIME MONITORING CHARTS</h2>
+                        <button id="btnExportExcel" style="padding: 10px 18px; background-color: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: background-color 0.2s;">
+                            📥 Export to Excel
+                        </button>
+                    </div>
+                    
+                    <div class="charts-wrapper">
+                        <div class="chart-container">
+                            <h3>Temperature & Humidity Chart</h3>
+                            <canvas id="sensorChart"></canvas>
+                        </div>
+
+                        <div class="chart-container">
+                            <h3>Light Intensity Chart</h3>
+                            <canvas id="lightChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
             </div>
         </main>
     </div>
-    <script src="Js/Iot.js"></script>
+    <script src="Js/main.js"></script>
 </body>
 </html>
