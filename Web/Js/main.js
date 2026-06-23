@@ -563,7 +563,7 @@ async function loadAndDrawChart() {
 
             // Lọc dữ liệu của ngày hôm nay
             if (itemDateStr === todayStr) {
-                const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'});
                 
                 labels.push(timeStr);
                 nhietDoData.push(item.nhietdo);
@@ -678,7 +678,7 @@ function updateChartLive(newData) {
     
     const now = new Date();
     const todayStr = now.toLocaleDateString('vi-VN');
-    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'});
     
     // Kiểm tra sang ngày mới -> Reset trắng cả 2 biểu đồ
     if (todayStr !== currentChartDate) {

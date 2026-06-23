@@ -74,15 +74,15 @@ export default function LoginScreen() {
         >
           {/* --- PHẦN TIÊU ĐỀ & LOGO --- */}
           <View style={styles.headerContainer}>
-            <Text style={styles.mainTitle}>HỆ THỐNG TƯỚI TIÊU</Text>
-            <Text style={styles.mainTitle}>TỰ ĐỘNG</Text>
+            <Text style={styles.mainTitle}>ĐỒ ÁN TỐT NGHIỆP</Text>
+            {/* <Text style={styles.mainTitle}>SỬ DỤNG NĂNG LƯỢNG MẶT TRỜI</Text> */}
             
             <Image
-              source={require('../assets/images/imageLogin.png')}
+              source={require('../assets/images/logo_hcmute.png')}
               style={styles.logo}
             />
             
-            <Text style={styles.subTitle}>SỬ DỤNG NĂNG LƯỢNG MẶT TRỜI</Text>
+            <Text style={styles.subTitle}> THIẾT KẾ MÔ HÌNH HỆ THỐNG TƯỚI TIÊU TỰ ĐỘNG TÍCH HỢP NĂNG LƯỢNG MẶT TRỜI</Text>
           </View>
 
           {/* --- FORM ĐĂNG NHẬP --- */}
@@ -137,9 +137,9 @@ export default function LoginScreen() {
                 <Text style={styles.checkboxText}>Ghi nhớ đăng nhập</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity>
+              {/* <TouchableOpacity>
                 <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
@@ -197,13 +197,22 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    paddingBottom: 40,
+    justifyContent: 'space-between', 
+    paddingTop: 5,                // ĐÃ SỬA: Giảm padding đỉnh xuống tối thiểu để kéo toàn bộ mạch giao diện lên sát trên
+    paddingBottom: 180,            // ĐÃ SỬA: Tăng nhẹ đệm đáy để ép cụm dưới dồn cao lên
   },
   headerContainer: {
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 50,
+    justifyContent: 'center',
+    marginTop: 80,                 // ĐÃ SỬA: Triệt tiêu hoàn toàn khoảng cách phía trên Logo
+    width: '100%',
+  },
+  logo: {
+    width: 135,
+    height: 135,
+    resizeMode: 'contain',
+    alignSelf: 'center',
+    marginBottom: 8,              // ĐÃ SỬA: Thu hẹp khoảng cách với chữ tiêu đề
   },
   mainTitle: {
     fontSize: 22,
@@ -212,12 +221,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 0.5,
     lineHeight: 28,
-  },
-  logo: {
-    width: 140,
-    height: 140,
-    resizeMode: 'contain',
-    marginVertical: 10,
   },
   subTitle: {
     fontSize: 14,
@@ -230,14 +233,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderRadius: 20,
     paddingHorizontal: 20,
-    paddingVertical: 25,
+    paddingVertical: 10,             
     marginHorizontal: 20,
-    // Hiệu ứng nổi bọt (Shadow)
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 6 },
-    // shadowOpacity: 0.1,
-    // shadowRadius: 10,
-    // elevation: 8,
+    marginBottom: 25,             // ĐÃ SỬA: Tăng khoảng cách đáy để đẩy cả Form nhấc cao lên một khoảng so với trước
+    width: width - 40,               
   },
   inputWrapper: {
     flexDirection: 'row',
