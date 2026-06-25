@@ -2,7 +2,7 @@ const Sensor = require("../models/sensor");
 
 // Biến lưu mốc thời gian lần cuối cùng ghi vào Database
 let lastSaveTime = 0; 
-const SAVE_INTERVAL = 1 * 60 * 1000; // 1 phút
+const SAVE_INTERVAL = 3 * 60 * 1000; // 3 phút
 
 // 1. HÀM XỬ LÝ LƯU DỮ LIỆU (Sẽ gọi từ file Server chính có chứa WebSocket)
 const handleSaveSensor = async (doc) => {
