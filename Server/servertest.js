@@ -42,7 +42,7 @@ app.use(express.static(path.join(__dirname, "../Web")));
 // ⚠️ KHÔNG hardcode URI có chứa username/password trong code.
 // Tạo file .env ở thư mục gốc với nội dung:
 //   MONGO_URI=mongodb+srv://<user>:<pass>@<cluster>/<db>?retryWrites=true&w=majority
-const dbURI = process.env.MONGO_URI;
+const dbURI = "mongodb+srv://vinh8386:vinhnt0806@doantotnghiep.0swczoc.mongodb.net/vinh?retryWrites=true&w=majority&appName=Doantotnghiep";
 mongoose.connect(dbURI)
 .then(async () => {
     console.log("🟢 Đã kết nối MongoDB");
