@@ -10,6 +10,10 @@ const dataStorage = {
         humidityUpper: 0, humidityLower: 0,
         soilMoistureUpper: 0, soilMoistureLower: 0,
         lightIntensityUpper: 0, lightIntensityLower: 0
+    },
+    deviceStatus: {
+        online: false,
+        lastSeen: null
     }
 };
 
