@@ -13,9 +13,9 @@ import {
   View
 } from 'react-native';
 
-// Đổi cổng kết nối sang cổng WebSocket Server (Ví dụ: 8084)
-const BACKEND_URL = "datn-iot-hcmute.onrender.com"; // Bỏ https://
-const WS_URL = `wss://${BACKEND_URL}`;           // Kết quả: wss://datn-iot-hcmute.onrender.com
+// Kết nối WebSocket Server
+const BACKEND_URL = "datn-iot-hcmute.onrender.com";
+const WS_URL = `wss://${BACKEND_URL}`; 
 
 const HomeScreen = () => {
 

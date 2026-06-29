@@ -765,10 +765,7 @@
 #include <Adafruit_SH110X.h>
 #include <ArduinoJson.h>
 #include <WebSocketsClient.h> 
-#include <esp_task_wdt.h> // Thư viện Watchdog Timer cho ESP32
-
-// Cấu hình Watchdog Timer (Timeout 10 giây)
-#define WDT_TIMEOUT 10
+#include <esp_task_wdt.h>
 
 // Wifi Config
 const char* ssid = "Galaxy A06 5G 9754";
@@ -780,6 +777,9 @@ const int ws_port = 443;
 
 WebSocketsClient webSocket; 
 bool isWsConnected = false; 
+
+// Cấu hình Watchdog Timer (Timeout 10 giây)
+#define WDT_TIMEOUT 10
 
 // RELAY (Giữ lại định nghĩa pin nếu cần dùng song song, hoặc có thể bỏ nếu chỉ dùng UART)
 #define PUMP  25
@@ -799,7 +799,10 @@ bool isWsConnected = false;
 // SENSORS
 #define DHTPIN 13
 #define DHTTYPE DHT22
+DHT dht(DHTPIN, DHTTYPE);
+BH1750 lightMeter(0x23);
 #define SOIL_PIN 34
+
 
 // LED WIFI
 #define LED_WIFI_GREEN 33
@@ -813,9 +816,6 @@ bool isWsConnected = false;
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
-
-DHT dht(DHTPIN, DHTTYPE);
-BH1750 lightMeter(0x23);
 
 // Control States
 bool pump  = 0;
@@ -875,9 +875,11 @@ const int debounceDelay = 50;
 bool isWaitingInitialSync = false; 
 
 // Hàm gửi trạng thái MODE lên Server qua WebSocket
-void sendMode() {
+void sendMode() 
+{
   if (WiFi.status() != WL_CONNECTED || !isWsConnected) return;
-  if(mode != lastModeS) {
+  if(mode != lastModeS) 
+  {
     JsonDocument doc;
     doc["event"] = "mode";
     doc["mode"] = mode;
@@ -890,11 +892,13 @@ void sendMode() {
 }
 
 // Hàm gửi trạng thái thiết bị qua WebSocket
-void sendControl() {
-  Serial.println("[DEBUG] Nút bấm kích hoạt hàm sendControl()"); 
+void sendControl() 
+{
+  Serial.println("Nút bấm kích hoạt hàm sendControl()");
   if (WiFi.status() != WL_CONNECTED || !isWsConnected) return;
 
-  if (pump != lastPumpS || spray != lastSprayS || light != lastLightS || fan != lastFanS || shade != lastShadeS) {
+  if (pump != lastPumpS || spray != lastSprayS || light != lastLightS || fan != lastFanS || shade != lastShadeS) 
+  {
     JsonDocument doc;
     doc["event"] = "control"; 
     doc["bom"] = pump ? 1 : 0;        
@@ -905,10 +909,8 @@ void sendControl() {
 
     String json;
     serializeJson(doc, json);
-    
-    Serial.print("[🟢 DEBUG] ESP32 đang bắn JSON lên Server: ");
+    Serial.print("ESP32 đang gửi JSON lên Server: ");
     Serial.println(json);
-
     webSocket.sendTXT(json); 
 
     lastPumpS = pump;
@@ -920,14 +922,12 @@ void sendControl() {
 }
 
 // Hàm gửi dữ liệu cảm biến qua WebSocket
-void sendSensor() {
+void sendSensor() 
+{
   if (WiFi.status() != WL_CONNECTED || !isWsConnected) return;
 
   JsonDocument doc;
   doc["event"] = "sensor"; 
-  
-  // Sử dụng hàm String(biến, 1) để ép về dạng chuỗi có 1 chữ số thập phân
-  // Khi gửi qua WebSocket, giá trị sẽ hiển thị dạng "28.5" thay vì số 28.500000
   doc["nhietdo"] = String(nhietdo, 1);
   doc["doamkk"]  = String(doamkk, 1);
   doc["doamdat"] = String(doamdat, 1);
@@ -935,7 +935,7 @@ void sendSensor() {
 
   String json;
   serializeJson(doc, json);
-  webSocket.sendTXT(json); 
+  webSocket.sendTXT(json);
 }
 
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
@@ -950,32 +950,30 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
       Serial.println("[WS] Kết nối thành công tới Server WebSocket!");
       isWsConnected = true;
       isWaitingInitialSync = true; 
-      
-      // 1. CHỦ ĐỘNG XIN NGƯỠNG TỪ SERVER
+      // 1. GỬI YÊU CẦU KHI VỪA KẾT NỐI ĐỂ LẤY NGƯỠNG
       {
         JsonDocument syncReqDoc;
         syncReqDoc["event"] = "request_sync";
         String jsonReq;
         serializeJson(syncReqDoc, jsonReq);
         webSocket.sendTXT(jsonReq);
-        Serial.println("📤 [WS] Đã gửi 'request_sync' (Xin cấu hình ngưỡng)...");
+        Serial.println("Đã gửi 'request_sync' lấy ngưỡng cài đặt");
       }
-      
       // 2. CẬP NHẬT TRẠNG THÁI THIẾT BỊ LÊN SERVER
       {
         JsonDocument statusDoc;
         statusDoc["event"] = "device_status"; 
+        statusDoc["is_online"] = true;
         statusDoc["mode"]  = mode;
         statusDoc["control"]["bom"]       = pump ? 1 : 0;
         statusDoc["control"]["phunsuong"] = spray ? 1 : 0;
         statusDoc["control"]["den"]       = light ? 1 : 0;
         statusDoc["control"]["quat"]      = fan ? 1 : 0;
         statusDoc["control"]["manche"]    = shade ? 1 : 0;
-        
         String jsonStatus;
         serializeJson(statusDoc, jsonStatus);
         webSocket.sendTXT(jsonStatus);
-        Serial.println("📤 [WS] Đã cập nhật trạng thái thiết bị ban đầu lên Server!");
+        Serial.println("Đã cập nhật trạng thái thiết bị ban đầu lên Server");
       }
       break;
       
@@ -994,7 +992,6 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
       }
 
       String eventType = doc["event"] | "";
-      
       if (eventType == "threshold") {
         if (doc.containsKey("temperatureUpper"))   nhietdoTren = doc["temperatureUpper"];
         if (doc.containsKey("humidityUpper"))      doamkkTren  = doc["humidityUpper"];
@@ -1245,30 +1242,118 @@ void uart2_Shade() {
 void getSensor() {
   float temp_nhietdo = dht.readTemperature();
   float temp_doam = dht.readHumidity();
-
   if (!isnan(temp_nhietdo) && !isnan(temp_doam)) {
     nhietdo = round(temp_nhietdo * 10) / 10.0;
     doamkk = round(temp_doam * 10) / 10.0;
   } else {
     Serial.println("Loi doc DHT!");
   }
-
   anhsang = round(lightMeter.readLightLevel() * 10) / 10.0;
-
   long sum = 0;
   for (int i = 0; i < 20; i++) {
     sum += analogRead(SOIL_PIN);
     delay(2);
   }
-
   int DatValue = sum / 20;
-
   doamdat = (100.0 - ((DatValue / 4095.0) * 100.0));
-
   if (doamdat < 0) doamdat = 0;
   if (doamdat > 100) doamdat = 100;
-
   doamdat = round(doamdat * 10) / 10.0;
+}
+void oled()
+{
+      display.clearDisplay();
+    display.setTextSize(1);
+    
+    if (currentScreen == 0) {
+      display.setCursor(10, 0);
+      display.println("HE THONG GIAM SAT");
+
+      display.setCursor(0, 10);
+      display.print("MODE: ");
+      if (mode == 0) display.println("AUTO");
+      else display.println("MANUAL");
+      
+      display.setCursor(0, 20);
+      display.print("Nhietdo:"); 
+      display.print(nhietdo, 1); 
+      display.write(247); 
+      display.print("C"); 
+
+      display.setCursor(0, 30);
+      display.print("Doamkk:"); 
+      display.print(doamkk, 1);
+      display.print("%");
+
+      display.setCursor(0, 40);
+      display.print("Doamdat:"); 
+      display.print(doamdat, 1); 
+      display.print("%"); 
+
+      display.setCursor(0, 50);
+      display.print("As:"); 
+      display.print(anhsang, 1); 
+      display.print("lux");
+    }
+    else if(currentScreen == 1) {
+      display.setCursor(10, 0);
+      display.println("NGUONG CAI DAT");
+      display.setCursor(40, 10); 
+      display.print("Duoi");
+      display.setCursor(90, 10); 
+      display.print("Tren");
+
+      display.setCursor(0, 20); 
+      display.print("Nhietdo: "); 
+      display.print(nhietdoDuoi, 1); 
+      display.setCursor(90, 20); 
+      display.print(nhietdoTren, 1); 
+
+      display.setCursor(0, 30); 
+      display.print("Doamkk: "); 
+      display.print(doamkkDuoi, 1); 
+      display.setCursor(90, 30); 
+      display.print(doamkkTren, 1);
+
+      display.setCursor(0, 40); 
+      display.print("Doamdat: "); 
+      display.print(doamdatDuoi, 1); 
+      display.setCursor(90, 40); 
+      display.print(doamdatTren, 1); 
+
+      display.setCursor(0, 50); 
+      display.print("Asang:  "); 
+      display.print(anhsangDuoi, 1); 
+      display.setCursor(90, 50); 
+      display.print(anhsangTren, 1);
+    }
+    else if(currentScreen == 2) {
+      display.setCursor(0, 0); 
+      display.print("MODE: ");
+      if (mode == 0) display.println("AUTO"); 
+      else display.println("MANUAL");
+
+      display.setCursor(0, 10); 
+      display.print("Bom: "); 
+      display.println(pump ? "ON" : "OFF");
+
+      display.setCursor(0, 20); 
+      display.print("Phun: "); 
+      display.println(spray ? "ON" : "OFF");
+
+      display.setCursor(0, 30); 
+      display.print("Den: "); 
+      display.println(light ? "ON" : "OFF");
+
+      display.setCursor(0, 40); 
+      display.print("Quat: "); 
+      display.println(fan ? "ON" : "OFF");
+
+      display.setCursor(0, 50); 
+      display.print("Manche: "); 
+      display.println(shade ? "ON" : "OFF");
+    }
+    display.display();
 }
 
 void setup() {
@@ -1279,9 +1364,6 @@ void setup() {
   pinMode(SPRAY, OUTPUT);
   pinMode(LIGHT, OUTPUT);
   pinMode(FAN, OUTPUT);
-
-  pinMode(LED_WIFI_GREEN, OUTPUT);
-  pinMode(LED_WIFI_RED, OUTPUT);
 
   digitalWrite(PUMP, LOW);
   digitalWrite(SPRAY, LOW);
@@ -1322,26 +1404,39 @@ void loop() {
   static unsigned long lastReconnect = 0;
   static unsigned long lastSensor = 0;
   static unsigned long lastOLED = 0;
+  static unsigned long lastPing = 0;
 
-  if (WiFi.status() != WL_CONNECTED) {
-    digitalWrite(LED_WIFI_GREEN, LOW);
-    digitalWrite(LED_WIFI_RED, HIGH);
+  if (WiFi.status() != WL_CONNECTED)
+  {
     isWsConnected = false;
-    
-    if (millis() - lastReconnect > 10000) {
+    if (millis() - lastReconnect > 10000) 
+    {
       Serial.println("Reconnecting to WiFi...");
       WiFi.disconnect();
       WiFi.begin(ssid, password);
       lastReconnect = millis();
     }
   } 
-  else {
-    digitalWrite(LED_WIFI_GREEN, HIGH);
-    digitalWrite(LED_WIFI_RED, LOW);
+  else 
+  {
     webSocket.loop();
+    if (isWsConnected) {
+      if (millis() - lastPing > 30000) { // Gửi ping mỗi 30 giây
+        lastPing = millis();
+        JsonDocument pingDoc;
+        pingDoc["event"] = "ping";
+        pingDoc["is_online"] = true;
+        
+        String pingMsg;
+        serializeJson(pingDoc, pingMsg);
+        webSocket.sendTXT(pingMsg);
+        Serial.println("[WS] Đã gửi tín hiệu Ping (Heartbeat) giữ kết nối");
+      }
+    }
   }
 
-  if (millis() - lastSensor > 2000) {
+  if (millis() - lastSensor > 2000) 
+  {
     lastSensor = millis();
     getSensor();
     sendSensor();
@@ -1354,61 +1449,15 @@ void loop() {
     autoControl();
   }
   
-  uart2_Shade(); // Hàm điều khiển mái che cũ của bạn
+  uart2_Shade(); // Mái che
   uart2_Pump();  // Bơm chính
   uart2_Spray(); // Phun sương
   uart2_Light(); // Đèn
   uart2_Fan();   // Quạt
 
-  // ❌ ĐÃ VÔ HIỆU HÓA ĐIỀU KHIỂN CHÂN LOCAL ĐỂ TRÁNH XUNG ĐỘT PHẦN CỨNG 
-  // (Nếu bạn vẫn muốn xuất tín hiệu song song ra chân ESP32 thì bỏ comment 4 dòng dưới)
-  // digitalWrite(PUMP, pump);
-  // digitalWrite(SPRAY, spray);
-  // digitalWrite(LIGHT, light);
-  // digitalWrite(FAN, fan);
-
-  if (millis() - lastOLED > 500) {
+  if (millis() - lastOLED > 500) 
+  {
     lastOLED = millis();
-    display.clearDisplay();
-    display.setTextSize(1);
-    
-    if (currentScreen == 0) {
-      display.setCursor(10, 0);
-      display.println("HE THONG GIAM SAT");
-      display.setCursor(0, 10);
-      display.print("MODE: ");
-      if (mode == 0) display.println("AUTO");
-      else display.println("MANUAL");
-      
-      display.setCursor(0, 20);
-      display.print("Nhietdo:"); display.print(nhietdo, 1); display.write(247); display.print("C"); 
-      display.setCursor(0, 30);
-      display.print("Doamkk:"); display.print(doamkk, 1); display.print("%");
-      display.setCursor(0, 40);
-      display.print("Doamdat:"); display.print(doamdat, 1); display.print("%"); 
-      display.setCursor(0, 50);
-      display.print("As:"); display.print(anhsang, 1); display.print("lux");
-    }
-    else if(currentScreen == 1) {
-      display.setCursor(10, 0);
-      display.println("NGUONG CAI DAT");
-      display.setCursor(40, 10); display.print("Duoi");
-      display.setCursor(90, 10); display.print("Tren");
-
-      display.setCursor(0, 20); display.print("Nhietdo: "); display.print(nhietdoDuoi, 1); display.setCursor(90, 20); display.print(nhietdoTren, 1); 
-      display.setCursor(0, 30); display.print("Doamkk: "); display.print(doamkkDuoi, 1); display.setCursor(90, 30); display.print(doamkkTren, 1);
-      display.setCursor(0, 40); display.print("Doamdat: "); display.print(doamdatDuoi, 1); display.setCursor(90, 40); display.print(doamdatTren, 1); 
-      display.setCursor(0, 50); display.print("Asang:  "); display.print(anhsangDuoi, 1); display.setCursor(90, 50); display.print(anhsangTren, 1);
-    }
-    else if(currentScreen == 2) {
-      display.setCursor(0, 0); display.print("MODE: ");
-      if (mode == 0) display.println("AUTO"); else display.println("MANUAL");
-      display.setCursor(0, 10); display.print("Bom: "); display.println(pump ? "ON" : "OFF");
-      display.setCursor(0, 20); display.print("Phun: "); display.println(spray ? "ON" : "OFF");
-      display.setCursor(0, 30); display.print("Den: "); display.println(light ? "ON" : "OFF");
-      display.setCursor(0, 40); display.print("Quat: "); display.println(fan ? "ON" : "OFF");
-      display.setCursor(0, 50); display.print("Manche: "); display.println(shade ? "ON" : "OFF");
-    }
-    display.display();  
+    oled();
   }
 }
